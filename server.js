@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 // Define MongoDB schemas
 const highScoreSchema = new mongoose.Schema({
-    playerName: String,
+    name: String,
     score: Number,
     date: { type: Date, default: Date.now }
 });
@@ -60,23 +60,31 @@ app.get('/', (req, res) => {
 // API Routes
 app.get('/api/highscores', async (req, res) => {
     try {
-        const scores = await HighScore.find()
+        const topScores = await HighScore.find()
             .sort({ score: -1 })
             .limit(10);
-        res.json(scores);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch high scores' });
+        res.json(topScores);
+    } catch (error) {
+        console.error('Error fetching high scores:', error);
+        res.status(500).json({ error: 'Failed to fetch scores' });
     }
 });
 
 app.post('/api/highscores', async (req, res) => {
     try {
-        const { playerName, score } = req.body;
-        const newScore = new HighScore({ playerName, score });
+        const { name, score } = req.body;
+        const newScore = new HighScore({ name, score });
         await newScore.save();
-        res.json(newScore);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to save high score' });
+        
+        // Get top 10 scores
+        const topScores = await HighScore.find()
+            .sort({ score: -1 })
+            .limit(10);
+        
+        res.json(topScores);
+    } catch (error) {
+        console.error('Error saving high score:', error);
+        res.status(500).json({ error: 'Failed to save score' });
     }
 });
 
@@ -116,4 +124,7 @@ app.use((err, req, res, next) => {
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
-}); 
+});
+
+// Add console logs for debugging
+console.log('MongoDB connection status:', mongoose.connection.readyState); 
