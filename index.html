@@ -307,7 +307,6 @@
         <div class="boxes-container">
             <div class="box">
                 <h3>Menu</h3>
-                <div class="station-name" id="current-station">Select a station to view prices</div>
                 <div id="menu-list">
                     <!-- Menu items will be dynamically populated -->
                 </div>
@@ -493,8 +492,6 @@
         function updateMenu(station) {
             console.log(`Updating menu for station: ${station}`);
             const menuList = document.getElementById('menu-list');
-            const currentStationDisplay = document.getElementById('current-station');
-            currentStationDisplay.textContent = `Current Station: ${station}`;
             
             menuList.innerHTML = '';
             
