@@ -1,7 +1,7 @@
 {
-  "name": "station-game",
+  "name": "6ixGang",
   "version": "1.0.0",
-  "description": "A simple station game",
+  "description": "6ixGang - A Toronto-based game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
