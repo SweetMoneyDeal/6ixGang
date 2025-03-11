@@ -3,8 +3,8 @@ const path = require('path');
 const mongoose = require('mongoose');
 const app = express();
 
-// Use environment variable for port or default to 3000
-const port = process.env.PORT || 3000;
+// Use environment variable for port or default to 8080
+const port = process.env.PORT || 8080;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pound416';
 
 // Connect to MongoDB
@@ -107,7 +107,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running at http://localhost:${port}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
 }); 
