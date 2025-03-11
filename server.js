@@ -23,6 +23,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// Add this for production logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Define MongoDB schemas
 const highScoreSchema = new mongoose.Schema({
     playerName: String,
@@ -107,7 +113,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
 }); 
