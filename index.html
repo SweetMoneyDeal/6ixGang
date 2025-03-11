@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTC Dope Wars</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+        }
+        .station-button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            background-color: #808080;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 200px;
+        }
+        .station-button:hover {
+            background-color: #666666;
+        }
+        .station-button.selected {
+            background-color: #ff0000;
+            cursor: default;
+        }
+        .station-button.selected:hover {
+            background-color: #ff0000;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #333;
+        }
+        .boxes-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .box {
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .box h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .box p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        #menu-list {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            text-align: left;
+            width: 70px;
+            font-size: 16px;
+        }
+        .price-info {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-right: 20px;
+            flex: 1;
+        }
+        .item-price {
+            color: #4CAF50;
+            font-weight: bold;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            flex: 0.5;
+        }
+        .action-button {
+            padding: 5px 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            min-width: 60px;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        .action-button.sell {
+            background-color: #f44336;
+        }
+        .action-button.sell:hover {
+            background-color: #da190b;
+        }
+        #inventory-stats {
+            text-align: left;
+            width: 100%;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .buy-price {
+            color: #4CAF50;
+            font-size: 16px;
+        }
+        .sell-price {
+            color: #f44336;
+            font-size: 16px;
+        }
+        .station-name {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .time-display {
+            font-size: 24px;
+            color: #333;
+            margin: 10px 0 20px 0;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .time-display.flash {
+            color: #ff0000;
+            animation: flashEffect 1s ease;
+        }
+        @keyframes flashEffect {
+            0% { color: #ff0000; }
+            100% { color: #333; }
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: bold;
+        }
+        #gameOverModal .modal-title {
+            font-size: 40px;
+            color: #000000;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+        .modal-content p {
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .modal-button.confirm {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .modal-button.cancel {
+            background-color: #f44336;
+            color: white;
+        }
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+        }
+        .inventory-item:last-child {
+            border-bottom: none;
+        }
+        .inventory-item .action-button {
+            margin-left: 10px;
+        }
+        /* Add styles for high scores */
+        .high-scores {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .high-scores h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        #high-scores-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .high-score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .high-score-item:last-child {
+            border-bottom: none;
+        }
+        .high-score-rank {
+            color: #666;
+            margin-right: 10px;
+        }
+        .high-score-name {
+            color: #666;
+            margin-right: 10px;
+        }
+        .high-score-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TTC Dope Wars</h1>
+        <div class="time-display" id="time-display">10:00 PM</div>
+        <div id="buttons">
+            <button class="station-button" onclick="handleStationClick('Kipling', this)">Kipling</button>
+            <button class="station-button" onclick="handleStationClick('Spadina', this)">Spadina</button>
+            <button class="station-button" onclick="handleStationClick('Yonge', this)">Yonge</button>
+            <button class="station-button" onclick="handleStationClick('Main', this)">Main</button>
+            <button class="station-button" onclick="handleStationClick('Kennedy', this)">Kennedy</button>
+        </div>
+        <div id="message"></div>
+        
+        <div class="boxes-container">
+            <div class="box">
+                <h3>Menu</h3>
+                <div class="station-name" id="current-station">Select a station to view prices</div>
+                <div id="menu-list">
+                    <!-- Menu items will be dynamically populated -->
+                </div>
+            </div>
+            <div class="box">
+                <h3>Inventory</h3>
+                <div class="station-name" id="inventory-money">Money: $1000</div>
+                <p id="inventory-stats"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add modal HTML -->
+    <div id="buyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">How many units would you like to buy?</div>
+            <input type="number" id="quantityInput" class="modal-input" min="1" value="1">
+            <div class="modal-buttons">
+                <button class="modal-button cancel" onclick="closeBuyModal()">Cancel</button>
+                <button class="modal-button confirm" onclick="confirmBuy()">Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add sell modal HTML -->
+    <div id="sellModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">How many units would you like to sell?</div>
+            <input type="number" id="sellQuantityInput" class="modal-input" min="1" value="1">
+            <div class="modal-buttons">
+                <button class="modal-button cancel" onclick="closeSellModal()">Cancel</button>
+                <button class="modal-button confirm" onclick="confirmSell()">Sell</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add game over modal HTML -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Game Over!</div>
+            <p>The clock struck midnight, Your day is done. Try again tomorrow!</p>
+            <p>Final Money: $<span id="final-money">0</span></p>
+            <div class="high-scores">
+                <h3>Top 10 High Scores</h3>
+                <div id="high-scores-list">
+                    <!-- High scores will be dynamically populated -->
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button confirm" onclick="restartGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add high score name modal HTML -->
+    <div id="highScoreModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">New High Score!</div>
+            <p>Congratulations! You've made it to the top 10!</p>
+            <p>Enter your name to save your score:</p>
+            <input type="text" id="playerNameInput" class="modal-input" maxlength="20" placeholder="Enter your name">
+            <div class="modal-buttons">
+                <button class="modal-button confirm" onclick="saveHighScore()">Save Score</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedStations = [];
+        const totalStations = 5;
+        let inventory = {};
+        let money = 1000; // Starting money
+        let highScores = JSON.parse(localStorage.getItem('highScores')) || [
+            {name: 'Player 1', score: 1000},
+            {name: 'Player 2', score: 900},
+            {name: 'Player 3', score: 800},
+            {name: 'Player 4', score: 700},
+            {name: 'Player 5', score: 600},
+            {name: 'Player 6', score: 500},
+            {name: 'Player 7', score: 400},
+            {name: 'Player 8', score: 300},
+            {name: 'Player 9', score: 200},
+            {name: 'Player 10', score: 100}
+        ]; // Initialize with default scores if no saved scores exist
+        let currentStation = null;
+        let lastVisitedStation = null; // Track last visited station
+        let itemCosts = {}; // Track total cost for each item
+        let itemBuyStations = {}; // Track which station each item was bought from
+        let currentBuyItem = null;
+        let currentBuyPrice = 0;
+        let currentSellItem = null;
+        let currentSellPrice = 0;
+
+        // Define station order
+        const stationOrder = ['Kipling', 'Spadina', 'Yonge', 'Main', 'Kennedy'];
+
+        // Function to calculate minutes based on stations passed through
+        function calculateMinutesForStationChange(fromStation, toStation) {
+            if (!fromStation) return 3; // First station selection
+            
+            const fromIndex = stationOrder.indexOf(fromStation);
+            const toIndex = stationOrder.indexOf(toStation);
+            
+            if (fromIndex === -1 || toIndex === -1) return 3;
+            
+            // If clicking the same station, return 0
+            if (fromStation === toStation) {
+                console.log('Clicked same station, no time added');
+                return 0;
+            }
+            
+            // Calculate number of stations passed through
+            const stationsPassed = Math.abs(toIndex - fromIndex);
+            console.log(`Passing through ${stationsPassed} stations from ${fromStation} to ${toStation}`);
+            
+            // Add 3 minutes per station passed through
+            return stationsPassed * 3;
+        }
+
+        // Price ranges for each item (Item 1 is most expensive, Item 5 is cheapest)
+        const itemPriceRanges = {
+            'Item 1': { min: 2000, max: 15000 },  // Most expensive
+            'Item 2': { min: 1000, max: 5000 },
+            'Item 3': { min: 500, max: 2000 },
+            'Item 4': { min: 200, max: 800 },
+            'Item 5': { min: 10, max: 200 }       // Cheapest
+        };
+
+        // Function to generate random price between min and max
+        function getRandomPrice(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Function to generate random prices for a station
+        function generateStationPrices() {
+            const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
+            const prices = {};
+            
+            items.forEach(item => {
+                const range = itemPriceRanges[item];
+                // Generate buy price within the item's range
+                const buyPrice = getRandomPrice(range.min, range.max);
+                
+                // Generate sell price that's always positive
+                let sellPrice;
+                if (Math.random() < 0.5) {
+                    // Higher sell price (profit) - wider range for more expensive items
+                    const profitRange = Math.floor(buyPrice * 0.2); // 20% of buy price
+                    sellPrice = getRandomPrice(buyPrice + profitRange, buyPrice + (profitRange * 2));
+                } else {
+                    // Lower sell price (loss) but ensure it's at least 5
+                    const lossRange = Math.floor(buyPrice * 0.15); // 15% of buy price
+                    const minSellPrice = Math.max(5, buyPrice - (lossRange * 2));
+                    sellPrice = getRandomPrice(minSellPrice, buyPrice - lossRange);
+                }
+                
+                prices[item] = {
+                    buy: buyPrice,
+                    sell: sellPrice
+                };
+            });
+            
+            return prices;
+        }
+
+        // Generate random prices for each station
+        const stationPrices = {
+            'Kipling': generateStationPrices(),
+            'Spadina': generateStationPrices(),
+            'Yonge': generateStationPrices(),
+            'Main': generateStationPrices(),
+            'Kennedy': generateStationPrices()
+        };
+
+        // Log the generated prices for debugging
+        console.log('Generated prices for all stations:', stationPrices);
+
+        // Add number formatting function
+        function formatMoney(amount) {
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function updateMenu(station) {
+            console.log(`Updating menu for station: ${station}`);
+            const menuList = document.getElementById('menu-list');
+            const currentStationDisplay = document.getElementById('current-station');
+            currentStationDisplay.textContent = `Current Station: ${station}`;
+            
+            menuList.innerHTML = '';
+            
+            // Display items in order from most expensive to cheapest
+            const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
+            items.forEach(item => {
+                const prices = stationPrices[station][item];
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <span class="item-name">${item}</span>
+                    <div class="price-info">
+                        <span class="buy-price">Buy: $${formatMoney(prices.buy)}</span>
+                        <span class="sell-price">Sell: $${formatMoney(prices.sell)}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="action-button" onclick="handleBuy('${item}', ${prices.buy})">Buy</button>
+                    </div>
+                `;
+                menuList.appendChild(menuItem);
+            });
+        }
+
+        // Time display functionality
+        let currentTime = new Date();
+        currentTime.setHours(22, 0, 0); // Set to 10:00 PM
+        currentTime.setMilliseconds(0);
+
+        // Remove the automatic time update interval
+        // setInterval(updateTimeDisplay, 1000);
+        // updateTimeDisplay(); // Initial update
+
+        // Initial time display
+        const timeDisplay = document.getElementById('time-display');
+        const hours = currentTime.getHours();
+        const minutes = currentTime.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        timeDisplay.textContent = timeString;
+
+        // Start at Kipling station
+        window.onload = function() {
+            console.log('Game starting at Kipling station');
+            const kiplingButton = document.querySelector('.station-button');
+            kiplingButton.classList.add('selected');
+            currentStation = kiplingButton;
+            selectedStations.push('Kipling');
+            lastVisitedStation = 'Kipling'; // Initialize lastVisitedStation
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+        }
+
+        function handleStationClick(station, button) {
+            console.log(`Station clicked: ${station}`);
+            
+            // Remove selected class from previous station
+            if (currentStation) {
+                currentStation.classList.remove('selected');
+            }
+            
+            // Add selected class to new station
+            button.classList.add('selected');
+            currentStation = button;
+            
+            // Update menu with new station's prices
+            updateMenu(station);
+            
+            // Update inventory display with new station's prices
+            updateInventoryDisplay();
+            
+            // Only add time if we're not clicking the current station
+            if (lastVisitedStation !== station) {
+                // Calculate minutes based on stations passed through
+                const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
+                console.log(`Adding ${minutesToAdd} minutes for station change`);
+                
+                // Add minutes to the time and trigger flash effect
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                const timeDisplay = document.getElementById('time-display');
+                timeDisplay.classList.add('flash');
+                setTimeout(() => {
+                    timeDisplay.classList.remove('flash');
+                }, 1000);
+                console.log(`Added ${minutesToAdd} minutes. New time: ${currentTime.getHours()}:${currentTime.getMinutes()}`);
+            } else {
+                console.log('Clicked current station, no time added');
+            }
+
+            // Add station to selected stations if it's new
+            if (!selectedStations.includes(station)) {
+                selectedStations.push(station);
+                console.log(`Current selected stations: ${selectedStations.join(', ')}`);
+            } else {
+                console.log('Station already selected');
+            }
+
+            // Update last visited station
+            lastVisitedStation = station;
+
+            // Update the time display
+            const hours = currentTime.getHours();
+            const minutes = currentTime.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+            timeDisplay.textContent = timeString;
+
+            // Check if game is over (midnight or beyond)
+            if (hours === 0 || (hours === 1 && minutes > 0)) {
+                showGameOver();
+            }
+
+            // Update the boxes
+            document.getElementById('message').textContent = '';
+        }
+
+        function handleBuy(item, price) {
+            console.log(`Checking if can buy ${item} at $${price}`);
+            
+            // Check if player has enough money for at least 1 unit
+            if (money < price) {
+                console.log('Not enough money for even 1 unit!');
+                document.getElementById('message').textContent = 'Not enough money!';
+                document.getElementById('message').style.color = '#f44336';
+                return;
+            }
+            
+            currentBuyItem = item;
+            currentBuyPrice = price;
+            
+            // Calculate maximum affordable quantity
+            const maxAffordable = Math.floor(money / price);
+            console.log(`Maximum affordable quantity: ${maxAffordable}`);
+            
+            // Show the modal
+            const modal = document.getElementById('buyModal');
+            modal.style.display = 'block';
+            
+            // Set input to maximum affordable quantity (minimum 1)
+            const quantityInput = document.getElementById('quantityInput');
+            quantityInput.value = Math.max(1, maxAffordable);
+            quantityInput.max = maxAffordable; // Set maximum allowed value
+        }
+
+        function closeBuyModal() {
+            console.log('Closing buy modal');
+            const modal = document.getElementById('buyModal');
+            modal.style.display = 'none';
+            currentBuyItem = null;
+            currentBuyPrice = 0;
+        }
+
+        function confirmBuy() {
+            const quantity = parseInt(document.getElementById('quantityInput').value);
+            const totalCost = currentBuyPrice * quantity;
+            
+            console.log(`Attempting to buy ${quantity} units of ${currentBuyItem} for $${totalCost}`);
+            
+            if (money >= totalCost) {
+                money -= totalCost;
+                inventory[currentBuyItem] = (inventory[currentBuyItem] || 0) + quantity;
+                // Track the cost for average calculation
+                itemCosts[currentBuyItem] = (itemCosts[currentBuyItem] || 0) + totalCost;
+                // Track the buy station
+                const currentStation = document.getElementById('current-station').textContent.split(': ')[1];
+                itemBuyStations[currentBuyItem] = currentStation;
+                console.log(`Bought ${quantity} units of ${currentBuyItem} from ${currentStation}. Money: $${money}`);
+                updateInventoryDisplay();
+                document.getElementById('message').textContent = '';
+            } else {
+                console.log('Not enough money!');
+                document.getElementById('message').textContent = 'Not enough money!';
+                document.getElementById('message').style.color = '#f44336';
+            }
+            
+            closeBuyModal();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const buyModal = document.getElementById('buyModal');
+            const sellModal = document.getElementById('sellModal');
+            const gameOverModal = document.getElementById('gameOverModal');
+            const highScoreModal = document.getElementById('highScoreModal');
+            
+            if (event.target === buyModal) {
+                closeBuyModal();
+            }
+            if (event.target === sellModal) {
+                closeSellModal();
+            }
+            if (event.target === gameOverModal) {
+                restartGame();
+            }
+            if (event.target === highScoreModal) {
+                // Don't allow closing high score modal by clicking outside
+                return;
+            }
+        }
+
+        function handleSell(item, price) {
+            console.log(`Opening sell modal for ${item} at $${price}`);
+            
+            // Get the current station
+            const currentStation = document.getElementById('current-station').textContent.split(': ')[1];
+            console.log(`Current station: ${currentStation}`);
+            
+            // Get the sell price from the current station
+            const sellPrice = stationPrices[currentStation][item].sell;
+            console.log(`Sell price at current station: $${sellPrice}`);
+            
+            currentSellItem = item;
+            currentSellPrice = sellPrice;
+            
+            // Get maximum available quantity
+            const maxAvailable = inventory[item] || 0;
+            console.log(`Maximum available quantity: ${maxAvailable}`);
+            
+            // Show the modal
+            const modal = document.getElementById('sellModal');
+            modal.style.display = 'block';
+            
+            // Set input to maximum available quantity (minimum 1)
+            const quantityInput = document.getElementById('sellQuantityInput');
+            quantityInput.value = Math.max(1, maxAvailable);
+            quantityInput.max = maxAvailable; // Set maximum allowed value
+        }
+
+        function closeSellModal() {
+            console.log('Closing sell modal');
+            const modal = document.getElementById('sellModal');
+            modal.style.display = 'none';
+            currentSellItem = null;
+            currentSellPrice = 0;
+        }
+
+        function confirmSell() {
+            const quantity = parseInt(document.getElementById('sellQuantityInput').value);
+            console.log(`Attempting to sell ${quantity} units of ${currentSellItem} at $${currentSellPrice} each`);
+            
+            if (quantity <= (inventory[currentSellItem] || 0)) {
+                money += currentSellPrice * quantity;
+                inventory[currentSellItem] -= quantity;
+                
+                // Update itemCosts to reflect sold items
+                const totalCost = itemCosts[currentSellItem] || 0;
+                const averageCost = Math.round(totalCost / (inventory[currentSellItem] + quantity));
+                itemCosts[currentSellItem] = averageCost * inventory[currentSellItem];
+                
+                console.log(`Sold ${quantity} units of ${currentSellItem} for $${currentSellPrice * quantity}. Money: $${money}`);
+                updateInventoryDisplay();
+                document.getElementById('message').textContent = '';
+            } else {
+                console.log('Not enough units to sell!');
+                document.getElementById('message').textContent = 'Not enough units to sell!';
+                document.getElementById('message').style.color = '#f44336';
+            }
+            
+            closeSellModal();
+        }
+
+        function updateInventoryDisplay() {
+            const inventoryStats = document.getElementById('inventory-stats');
+            const inventoryMoney = document.getElementById('inventory-money');
+            inventoryStats.innerHTML = '';
+            
+            // Update money display with commas
+            inventoryMoney.textContent = `Money: $${formatMoney(money)}`;
+            
+            // Add a divider
+            const divider = document.createElement('div');
+            divider.style.borderBottom = '1px solid #eee';
+            divider.style.margin = '10px 0';
+            inventoryStats.appendChild(divider);
+            
+            // Get current station
+            const currentStation = document.getElementById('current-station').textContent.split(': ')[1];
+            
+            // Display each item in inventory
+            Object.entries(inventory).forEach(([item, quantity]) => {
+                if (quantity > 0) {
+                    // Calculate average price paid for this item
+                    const totalCost = itemCosts[item] || 0;
+                    const averagePrice = Math.round(totalCost / quantity);
+                    
+                    // Get the sell price from the current station
+                    const sellPrice = stationPrices[currentStation][item].sell;
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'inventory-item';
+                    itemDiv.innerHTML = `
+                        <div style="flex: 1;">
+                            <span class="item-name">${item}</span>
+                            <span style="color: #666; margin-left: 10px;">Avg: $${formatMoney(averagePrice)}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: #666;">Total: ${quantity}</span>
+                            <button class="action-button sell" onclick="handleSell('${item}', ${sellPrice})">Sell</button>
+                        </div>
+                    `;
+                    inventoryStats.appendChild(itemDiv);
+                }
+            });
+        }
+
+        function showGameOver() {
+            console.log('Game Over!');
+            
+            // Check if current score qualifies for high score
+            const isHighScore = highScores.length < 10 || money > highScores[highScores.length - 1].score;
+            
+            if (isHighScore) {
+                console.log('New high score achieved!');
+                // Show high score name modal first
+                const highScoreModal = document.getElementById('highScoreModal');
+                highScoreModal.style.display = 'block';
+                return; // Don't show game over modal yet
+            }
+            
+            // If not a high score, show game over modal directly
+            showGameOverModal();
+        }
+
+        function showGameOverModal() {
+            const modal = document.getElementById('gameOverModal');
+            document.getElementById('final-money').textContent = formatMoney(money);
+            
+            // Update high scores display
+            updateHighScoresDisplay();
+            
+            modal.style.display = 'block';
+            
+            // Disable all station buttons
+            document.querySelectorAll('.station-button').forEach(button => {
+                button.disabled = true;
+            });
+            
+            // Disable all action buttons
+            document.querySelectorAll('.action-button').forEach(button => {
+                button.disabled = true;
+            });
+        }
+
+        function updateHighScoresDisplay() {
+            console.log('Updating high scores display');
+            const highScoresList = document.getElementById('high-scores-list');
+            highScoresList.innerHTML = '';
+            
+            // Create an array of 10 scores, filling empty spots with $0
+            const displayScores = [...highScores];
+            while (displayScores.length < 10) {
+                displayScores.push({name: '---', score: 0});
+            }
+            
+            displayScores.forEach((score, index) => {
+                const scoreItem = document.createElement('div');
+                scoreItem.className = 'high-score-item';
+                scoreItem.innerHTML = `
+                    <span class="high-score-rank">#${index + 1}</span>
+                    <span class="high-score-name">${score.name}</span>
+                    <span class="high-score-value">$${formatMoney(score.score)}</span>
+                `;
+                highScoresList.appendChild(scoreItem);
+            });
+            
+            console.log('Current high scores:', highScores);
+        }
+
+        function saveHighScore() {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+            
+            console.log(`Saving high score for player: ${playerName}`);
+            
+            // Add new high score
+            highScores.push({name: playerName, score: money});
+            
+            // Sort scores in descending order
+            highScores.sort((a, b) => b.score - a.score);
+            
+            // Keep only top 10 scores
+            highScores = highScores.slice(0, 10);
+            
+            // Save to localStorage
+            localStorage.setItem('highScores', JSON.stringify(highScores));
+            
+            // Close high score modal
+            const highScoreModal = document.getElementById('highScoreModal');
+            highScoreModal.style.display = 'none';
+            
+            // Show game over modal
+            showGameOverModal();
+        }
+
+        function restartGame() {
+            console.log('Restarting game');
+            // Reset all game variables
+            selectedStations = [];
+            inventory = {};
+            money = 1000;
+            currentStation = null;
+            lastVisitedStation = null;
+            itemCosts = {};
+            itemBuyStations = {};
+            currentBuyItem = null;
+            currentBuyPrice = 0;
+            currentSellItem = null;
+            currentSellPrice = 0;
+
+            // Reset time to 10:00 PM
+            currentTime.setHours(22, 0, 0);
+            const timeDisplay = document.getElementById('time-display');
+            timeDisplay.textContent = '10:00 PM';
+
+            // Reset UI
+            document.querySelectorAll('.station-button').forEach(button => {
+                button.classList.remove('selected');
+                button.disabled = false;
+            });
+            document.querySelectorAll('.action-button').forEach(button => {
+                button.disabled = false;
+            });
+            const kiplingButton = document.querySelector('.station-button');
+            kiplingButton.classList.add('selected');
+            currentStation = kiplingButton;
+            selectedStations.push('Kipling');
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            document.getElementById('message').textContent = '';
+
+            // Close all modals
+            const gameOverModal = document.getElementById('gameOverModal');
+            const highScoreModal = document.getElementById('highScoreModal');
+            gameOverModal.style.display = 'none';
+            highScoreModal.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
