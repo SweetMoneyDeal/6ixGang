@@ -289,11 +289,33 @@
             color: #4CAF50;
             font-weight: bold;
         }
+        #view-high-scores-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        #viewHighScoresModal .modal-content {
+            width: 400px;
+        }
+        
+        #viewHighScoresModal .high-score-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #viewHighScoresModal .high-score-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>6ixGang</h1>
+        <button class="action-button" onclick="showHighScores()" style="margin-bottom: 20px;">View High Scores</button>
         <div class="time-display" id="time-display">10:00 PM</div>
         <div id="buttons">
             <button class="station-button" onclick="handleStationClick('Kipling', this)">Kipling</button>
@@ -370,6 +392,21 @@
             <input type="text" id="playerNameInput" class="modal-input" maxlength="20" placeholder="Enter your name">
             <div class="modal-buttons">
                 <button class="modal-button confirm" onclick="saveHighScore()">Save Score</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this new modal for viewing high scores -->
+    <div id="viewHighScoresModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">High Scores</div>
+            <div class="high-scores">
+                <div id="view-high-scores-list">
+                    <!-- High scores will be populated here -->
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button confirm" onclick="closeHighScoresModal()">Close</button>
             </div>
         </div>
     </div>
@@ -534,8 +571,9 @@
         timeDisplay.textContent = timeString;
 
         // Start at Kipling station
-        window.onload = function() {
+        window.onload = async function() {
             console.log('Game starting at Kipling station');
+            await loadHighScores(); // Load scores from database
             const kiplingButton = document.querySelector('.station-button');
             kiplingButton.classList.add('selected');
             currentStation = kiplingButton;
@@ -677,6 +715,7 @@
             const sellModal = document.getElementById('sellModal');
             const gameOverModal = document.getElementById('gameOverModal');
             const highScoreModal = document.getElementById('highScoreModal');
+            const viewHighScoresModal = document.getElementById('viewHighScoresModal');
             
             if (event.target === buyModal) {
                 closeBuyModal();
@@ -686,6 +725,9 @@
             }
             if (event.target === gameOverModal) {
                 restartGame();
+            }
+            if (event.target === viewHighScoresModal) {
+                closeHighScoresModal();
             }
             if (event.target === highScoreModal) {
                 // Don't allow closing high score modal by clicking outside
@@ -861,7 +903,7 @@
             console.log('Current high scores:', highScores);
         }
 
-        function saveHighScore() {
+        async function saveHighScore() {
             const playerName = document.getElementById('playerNameInput').value.trim();
             
             if (!playerName) {
@@ -871,24 +913,59 @@
             
             console.log(`Saving high score for player: ${playerName}`);
             
-            // Add new high score
-            highScores.push({name: playerName, score: money});
-            
-            // Sort scores in descending order
-            highScores.sort((a, b) => b.score - a.score);
-            
-            // Keep only top 10 scores
-            highScores = highScores.slice(0, 10);
-            
-            // Save to localStorage
-            localStorage.setItem('highScores', JSON.stringify(highScores));
-            
-            // Close high score modal
-            const highScoreModal = document.getElementById('highScoreModal');
-            highScoreModal.style.display = 'none';
-            
-            // Show game over modal
-            showGameOverModal();
+            try {
+                // Save to database
+                const response = await fetch('/api/highscores', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: playerName,
+                        score: money
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save score');
+                }
+
+                // Update high scores with response from server
+                const updatedScores = await response.json();
+                highScores = updatedScores;
+                
+                // Close high score modal
+                const highScoreModal = document.getElementById('highScoreModal');
+                highScoreModal.style.display = 'none';
+                
+                // Show game over modal
+                showGameOverModal();
+                
+            } catch (error) {
+                console.error('Error saving score:', error);
+                alert('Failed to save score. Please try again.');
+            }
+        }
+
+        // Add function to load high scores when game starts
+        async function loadHighScores() {
+            try {
+                const response = await fetch('/api/highscores');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch scores');
+                }
+                const scores = await response.json();
+                highScores = scores;
+                console.log('Loaded high scores from database:', scores);
+            } catch (error) {
+                console.error('Error loading high scores:', error);
+                // Fall back to default scores if fetch fails
+                highScores = [
+                    {name: 'Player 1', score: 1000},
+                    {name: 'Player 2', score: 900},
+                    // ... rest of default scores
+                ];
+            }
         }
 
         function restartGame() {
@@ -932,6 +1009,52 @@
             const highScoreModal = document.getElementById('highScoreModal');
             gameOverModal.style.display = 'none';
             highScoreModal.style.display = 'none';
+        }
+
+        async function showHighScores() {
+            console.log('Showing high scores');
+            try {
+                // Fetch latest scores from database
+                const response = await fetch('/api/highscores');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch scores');
+                }
+                const scores = await response.json();
+                console.log('Fetched scores:', scores);
+                
+                // Update the display
+                const highScoresList = document.getElementById('view-high-scores-list');
+                highScoresList.innerHTML = '';
+                
+                if (scores.length === 0) {
+                    highScoresList.innerHTML = '<p style="text-align: center;">No high scores yet!</p>';
+                    return;
+                }
+                
+                scores.forEach((score, index) => {
+                    const scoreItem = document.createElement('div');
+                    scoreItem.className = 'high-score-item';
+                    scoreItem.innerHTML = `
+                        <span class="high-score-rank">#${index + 1}</span>
+                        <span class="high-score-name">${score.name}</span>
+                        <span class="high-score-value">$${formatMoney(score.score)}</span>
+                    `;
+                    highScoresList.appendChild(scoreItem);
+                });
+                
+                // Show the modal
+                const modal = document.getElementById('viewHighScoresModal');
+                modal.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading high scores:', error);
+                alert('Failed to load high scores. Please try again.');
+            }
+        }
+
+        function closeHighScoresModal() {
+            const modal = document.getElementById('viewHighScoresModal');
+            modal.style.display = 'none';
         }
     </script>
 </body>
