@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const app = express();
 
 // Use environment variable for port or default to 8080
-const port = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;
+const HOST = '0.0.0.0';
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pound416';
 
 // Connect to MongoDB
@@ -121,9 +122,9 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on port ${port}`);
-    console.log(`Environment: ${process.env.NODE_ENV}`);
+app.listen(PORT, HOST, () => {
+    console.log(`Server is running on http://${HOST}:${PORT}`);
+    console.log('Press Ctrl+C to quit.');
 });
 
 // Add console logs for debugging
