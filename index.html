@@ -646,40 +646,6 @@
             updateMenu(lastVisitedStation);
         }
 
-        function confirmBuy() {
-            const quantity = parseInt(document.getElementById('quantityInput').value) || 0;
-            const totalCost = currentBuyPrice * quantity;
-            
-            console.log('Confirming purchase:', {
-                item: currentBuyItem,
-                quantity,
-                totalCost,
-                currentMoney: money
-            });
-            
-            if (quantity <= 0) {
-                console.error('Invalid quantity');
-                return;
-            }
-            
-            if (money >= totalCost) {
-                money -= totalCost;
-                inventory[currentBuyItem] = (inventory[currentBuyItem] || 0) + quantity;
-                itemCosts[currentBuyItem] = (itemCosts[currentBuyItem] || 0) + totalCost;
-                
-                console.log('Purchase successful:', {
-                    newMoney: money,
-                    newInventory: inventory,
-                    itemCosts
-                });
-                
-                updateInventoryDisplay();
-                updateMenu(lastVisitedStation);
-            }
-            
-            closeBuyModal();
-        }
-
         function closeBuyModal() {
             const modal = document.getElementById('buyModal');
             modal.style.display = 'none';
@@ -688,21 +654,37 @@
         }
 
         function handleSell(item, price) {
-            console.log(`Opening sell modal for ${item} at $${price}`);
-            
-            currentSellItem = item;
-            currentSellPrice = price;
+            console.log(`Processing immediate sale of ${item} at $${price}`);
             
             const maxAvailable = inventory[item] || 0;
-            console.log(`Maximum available quantity: ${maxAvailable}`);
+            if (maxAvailable <= 0) {
+                return;
+            }
+
+            // Sell all available items immediately
+            const quantity = maxAvailable;
+            const totalPrice = price * quantity;
             
-            const modal = document.getElementById('sellModal');
-            modal.style.display = 'block';
+            money += totalPrice;
+            inventory[item] -= quantity;
             
-            const quantityInput = document.getElementById('sellQuantityInput');
-            quantityInput.value = maxAvailable;
-            quantityInput.max = maxAvailable;
-            quantityInput.min = '1';
+            if (inventory[item] <= 0) {
+                delete inventory[item];
+                delete itemCosts[item];
+            } else {
+                const remainingQuantity = inventory[item];
+                const averageCost = itemCosts[item] / (remainingQuantity + quantity);
+                itemCosts[item] = averageCost * remainingQuantity;
+            }
+            
+            console.log('Sale successful:', {
+                newMoney: money,
+                newInventory: inventory,
+                itemCosts
+            });
+            
+            updateInventoryDisplay();
+            updateMenu(lastVisitedStation);
         }
 
         function closeSellModal() {
@@ -834,12 +816,10 @@
         };
 
         window.onclick = function(event) {
-            const sellModal = document.getElementById('sellModal');
             const gameOverModal = document.getElementById('gameOverModal');
             const highScoreModal = document.getElementById('highScoreModal');
             const viewHighScoresModal = document.getElementById('viewHighScoresModal');
             
-            if (event.target === sellModal) closeSellModal();
             if (event.target === gameOverModal) restartGame();
             if (event.target === viewHighScoresModal) closeHighScoresModal();
         };
