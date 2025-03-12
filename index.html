@@ -505,17 +505,11 @@
             
             items.forEach(item => {
                 const range = itemPriceRanges[item];
-                const buyPrice = getRandomPrice(range.min, range.max);
-                let sellPrice;
-                if (Math.random() < 0.5) {
-                    const profitRange = Math.floor(buyPrice * 0.2);
-                    sellPrice = getRandomPrice(buyPrice + profitRange, buyPrice + (profitRange * 2));
-                } else {
-                    const lossRange = Math.floor(buyPrice * 0.15);
-                    const minSellPrice = Math.max(5, buyPrice - (lossRange * 2));
-                    sellPrice = getRandomPrice(minSellPrice, buyPrice - lossRange);
-                }
-                prices[item] = { buy: buyPrice, sell: sellPrice };
+                const price = getRandomPrice(range.min, range.max);
+                console.log(`Generated price for ${item}:`, price);
+                // Add stock amount between 0 and 10
+                const stock = Math.floor(Math.random() * 11);
+                prices[item] = { price: price, stock: stock };
             });
             
             return prices;
@@ -549,7 +543,10 @@
                 const prices = stationPrices[station][item];
                 console.log(`${item} prices:`, prices);
                 
-                const maxBuyable = Math.floor(money / prices.buy);
+                const maxBuyable = Math.min(
+                    Math.floor(money / prices.price),
+                    prices.stock // Limit by available stock
+                );
                 const currentInventory = inventory[item] || 0;
                 const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
                 console.log(`Maximum buyable ${item}:`, maxBuyable);
@@ -558,18 +555,18 @@
                 menuItem.className = 'menu-item';
                 menuItem.innerHTML = `
                     <div class="item-info">
-                        <div class="item-name">${item}</div>
-                        <div class="inventory-info" style="color: #666; font-size: 14px; margin: 4px 0 8px 0; text-align: left;">
-                            You have ${currentInventory} at an average cost of $${formatMoney(averageCost)}
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="item-name">${item}</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
+                        </div>
+                        <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
+                            <strong style="font-size: 16px;">${prices.stock}</strong> units available.<br>
+                            You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
                         </div>
                         <div class="price-info">
                             <div class="price-row">
-                                <div class="buy-price">Buy: $${formatMoney(prices.buy)}</div>
-                                <button class="action-button" onclick="handleBuy('${item}', ${prices.buy})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
-                            </div>
-                            <div class="price-row">
-                                <div class="sell-price">Sell: $${formatMoney(prices.sell)}</div>
-                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.sell})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                                <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
+                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
                             </div>
                         </div>
                     </div>
@@ -598,7 +595,7 @@
                 if (quantity > 0 && stationPrices[lastVisitedStation] && stationPrices[lastVisitedStation][item]) {
                     const totalCost = itemCosts[item] || 0;
                     const averagePrice = Math.round(totalCost / quantity);
-                    const sellPrice = stationPrices[lastVisitedStation][item].sell;
+                    const sellPrice = stationPrices[lastVisitedStation][item].price;
                     
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'inventory-item';
@@ -620,11 +617,21 @@
         function handleBuy(item, price) {
             console.log(`Processing immediate purchase of ${item} at $${price}`);
             
+            const stationStock = stationPrices[lastVisitedStation][item].stock;
+            if (stationStock <= 0) {
+                console.log('No stock available');
+                return;
+            }
+            
             if (money < price) {
                 return;
             }
             
-            const maxAffordable = Math.floor(money / price);
+            const maxAffordable = Math.min(
+                Math.floor(money / price),
+                stationStock // Limit by available stock
+            );
+            
             if (maxAffordable <= 0) {
                 return;
             }
@@ -637,13 +644,17 @@
             inventory[item] = (inventory[item] || 0) + quantity;
             itemCosts[item] = (itemCosts[item] || 0) + totalCost;
             
+            // Reduce station stock
+            stationPrices[lastVisitedStation][item].stock -= quantity;
+            
             console.log('Purchase successful:', {
                 item,
                 quantity,
                 totalCost,
                 newMoney: money,
                 newInventory: inventory,
-                itemCosts
+                itemCosts,
+                remainingStock: stationPrices[lastVisitedStation][item].stock
             });
             
             updateInventoryDisplay();
