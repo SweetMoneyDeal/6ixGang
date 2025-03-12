@@ -551,6 +551,7 @@
                 
                 const maxBuyable = Math.floor(money / prices.buy);
                 const currentInventory = inventory[item] || 0;
+                const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
                 console.log(`Maximum buyable ${item}:`, maxBuyable);
                 
                 const menuItem = document.createElement('div');
@@ -558,6 +559,9 @@
                 menuItem.innerHTML = `
                     <div class="item-info">
                         <div class="item-name">${item}</div>
+                        <div class="inventory-info" style="color: #666; font-size: 14px; margin: 4px 0 8px 0;">
+                            You have ${currentInventory} at an average cost of $${formatMoney(averageCost)}
+                        </div>
                         <div class="price-info">
                             <div class="price-row">
                                 <div class="buy-price">Buy: $${formatMoney(prices.buy)}</div>
