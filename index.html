@@ -790,6 +790,54 @@
             }
         }
 
+        function showGameOver() {
+            console.log('Game Over - Time has run out');
+            const modal = document.getElementById('gameOverModal');
+            const finalMoneySpan = document.getElementById('final-money');
+            
+            if (finalMoneySpan) {
+                finalMoneySpan.textContent = formatMoney(money);
+            }
+            
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        function restartGame() {
+            console.log('Restarting game...');
+            
+            // Reset game variables
+            money = 1000;
+            inventory = {};
+            itemCosts = {};
+            currentTime = new Date();
+            currentTime.setHours(22, 0, 0);
+            lastVisitedStation = 'Kipling';
+            
+            // Reset UI
+            const gameOverModal = document.getElementById('gameOverModal');
+            if (gameOverModal) {
+                gameOverModal.style.display = 'none';
+            }
+            
+            // Select Kipling station
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                document.querySelectorAll('.station-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                kiplingButton.classList.add('selected');
+            }
+            
+            // Update displays
+            updateTimeDisplay();
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            
+            console.log('Game restarted successfully');
+        }
+
         window.onload = async function() {
             console.log('Initializing game...');
             
