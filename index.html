@@ -741,6 +741,17 @@
                 previousStation: lastVisitedStation
             });
             
+            // Calculate minutes before updating lastVisitedStation
+            const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
+            console.log('Minutes to add:', minutesToAdd);
+            
+            if (minutesToAdd > 0) {
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                console.log('New time:', currentTime);
+                updateTimeDisplay();
+            }
+            
+            // Update station after time calculation
             lastVisitedStation = station;
             
             document.querySelectorAll('.station-button').forEach(btn => {
@@ -750,28 +761,28 @@
             
             updateMenu(station);
             updateInventoryDisplay();
-            
-            const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
-            if (minutesToAdd > 0) {
-                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
-                updateTimeDisplay();
-            }
         }
 
         function calculateMinutesForStationChange(fromStation, toStation) {
-            if (!fromStation) return 3;
+            console.log('Calculating minutes between stations:', { fromStation, toStation });
             
             const fromIndex = stationOrder.indexOf(fromStation);
             const toIndex = stationOrder.indexOf(toStation);
+            
+            console.log('Station indices:', { fromIndex, toIndex });
             
             if (fromIndex === -1 || toIndex === -1) return 3;
             if (fromStation === toStation) return 0;
             
             const stationsPassed = Math.abs(toIndex - fromIndex);
-            return stationsPassed * 3;
+            const minutesToAdd = stationsPassed * 3;
+            
+            console.log('Time calculation:', { stationsPassed, minutesToAdd });
+            return minutesToAdd;
         }
 
         function updateTimeDisplay() {
+            console.log('Updating time display');
             const timeDisplay = document.getElementById('time-display');
             if (timeDisplay) {
                 const hours = currentTime.getHours();
@@ -779,12 +790,14 @@
                 const ampm = hours >= 12 ? 'PM' : 'AM';
                 const displayHours = hours % 12 || 12;
                 const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                console.log('New time string:', timeString);
                 timeDisplay.textContent = timeString;
                 
                 timeDisplay.classList.add('flash');
                 setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
                 
                 if (hours === 0 || (hours === 1 && minutes > 0)) {
+                    console.log('Game over condition met');
                     showGameOver();
                 }
             }
