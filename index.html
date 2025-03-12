@@ -401,7 +401,7 @@
         
         <div class="boxes-container">
             <div class="box">
-                <div class="money-display" id="menu-money-display">$${formatMoney(money)}</div>
+                <div class="money-display" id="menu-money-display">Cash: $${formatMoney(money)}</div>
                 <h3>Menu</h3>
                 <div id="menu-list">
                     <!-- Menu items will be dynamically populated -->
@@ -541,7 +541,7 @@
             // Update money display in menu box
             const moneyDisplay = document.getElementById('menu-money-display');
             if (moneyDisplay) {
-                moneyDisplay.textContent = `$${formatMoney(money)}`;
+                moneyDisplay.textContent = `Cash: $${formatMoney(money)}`;
             }
             
             const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
@@ -805,7 +805,7 @@
             
             const moneyDisplay = document.getElementById('menu-money-display');
             if (moneyDisplay) {
-                moneyDisplay.textContent = `$${formatMoney(money)}`;
+                moneyDisplay.textContent = `Cash: $${formatMoney(money)}`;
             }
             
             updateMenu('Kipling');
