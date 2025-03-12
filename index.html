@@ -410,18 +410,6 @@
         </div>
     </div>
 
-    <!-- Add modal HTML -->
-    <div id="buyModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">How many units would you like to buy?</div>
-            <input type="number" id="quantityInput" class="modal-input" min="1" value="1">
-            <div class="modal-buttons">
-                <button class="modal-button cancel" onclick="closeBuyModal()">Cancel</button>
-                <button class="modal-button confirm" onclick="confirmBuy()">Buy</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Add sell modal HTML -->
     <div id="sellModal" class="modal">
         <div class="modal-content">
@@ -490,8 +478,6 @@
         let lastVisitedStation = 'Kipling';
         let itemCosts = {};
         let itemBuyStations = {};
-        let currentBuyItem = null;
-        let currentBuyPrice = 0;
         let currentSellItem = null;
         let currentSellPrice = 0;
         let currentTime = new Date();
@@ -575,11 +561,11 @@
                         <div class="price-info">
                             <div class="price-row">
                                 <div class="buy-price">Buy: $${formatMoney(prices.buy)}</div>
-                                <button class="action-button" onclick="handleBuy('${item}', ${prices.buy})">Buy ${maxBuyable}</button>
+                                <button class="action-button" onclick="handleBuy('${item}', ${prices.buy})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
                             </div>
                             <div class="price-row">
                                 <div class="sell-price">Sell: $${formatMoney(prices.sell)}</div>
-                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.sell})">Sell ${currentInventory}</button>
+                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.sell})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
                             </div>
                         </div>
                     </div>
@@ -628,25 +614,36 @@
         }
 
         function handleBuy(item, price) {
-            console.log(`Checking if can buy ${item} at $${price}`);
+            console.log(`Processing immediate purchase of ${item} at $${price}`);
             
             if (money < price) {
                 return;
             }
             
-            currentBuyItem = item;
-            currentBuyPrice = price;
-            
             const maxAffordable = Math.floor(money / price);
-            console.log(`Maximum affordable quantity: ${maxAffordable}`);
+            if (maxAffordable <= 0) {
+                return;
+            }
+
+            // Buy maximum affordable amount immediately
+            const quantity = maxAffordable;
+            const totalCost = price * quantity;
             
-            const modal = document.getElementById('buyModal');
-            modal.style.display = 'block';
+            money -= totalCost;
+            inventory[item] = (inventory[item] || 0) + quantity;
+            itemCosts[item] = (itemCosts[item] || 0) + totalCost;
             
-            const quantityInput = document.getElementById('quantityInput');
-            quantityInput.value = maxAffordable;
-            quantityInput.max = maxAffordable;
-            quantityInput.min = '1';
+            console.log('Purchase successful:', {
+                item,
+                quantity,
+                totalCost,
+                newMoney: money,
+                newInventory: inventory,
+                itemCosts
+            });
+            
+            updateInventoryDisplay();
+            updateMenu(lastVisitedStation);
         }
 
         function confirmBuy() {
@@ -837,13 +834,11 @@
         };
 
         window.onclick = function(event) {
-            const buyModal = document.getElementById('buyModal');
             const sellModal = document.getElementById('sellModal');
             const gameOverModal = document.getElementById('gameOverModal');
             const highScoreModal = document.getElementById('highScoreModal');
             const viewHighScoresModal = document.getElementById('viewHighScoresModal');
             
-            if (event.target === buyModal) closeBuyModal();
             if (event.target === sellModal) closeSellModal();
             if (event.target === gameOverModal) restartGame();
             if (event.target === viewHighScoresModal) closeHighScoresModal();
