@@ -495,6 +495,7 @@
             height: 100%;
             background-color: #f0f0f0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 2000;
@@ -503,9 +504,62 @@
         
         #splashScreen img {
             max-width: 80%;
-            max-height: 80vh;
+            max-height: 60vh;
             object-fit: contain;
             animation: bounceZoom 0.5s ease-in-out forwards;
+            margin-bottom: 20px;
+        }
+
+        #splashLoginForm {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        #splashLoginForm.visible {
+            opacity: 1;
+        }
+
+        #splashLoginForm input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        #splashLoginForm button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            min-width: 100px;
+        }
+
+        #splashLoginForm button.primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #splashLoginForm button.secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        #splashLoginForm .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
         }
 
         @keyframes bounceZoom {
@@ -525,10 +579,24 @@
     <!-- Add Splash Screen -->
     <div id="splashScreen">
         <img src="6ixGang.jpg" alt="6ixGang">
+        <div id="splashLoginForm">
+            <div id="splashLoginInputs">
+                <input type="text" id="splashUsername" class="modal-input" placeholder="Username">
+                <input type="password" id="splashPassword" class="modal-input" placeholder="Password">
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <button class="secondary" onclick="showRegisterForm()">Create Account</button>
+                    <button class="primary" onclick="handleSplashLogin()">Sign In</button>
+                </div>
+                <div class="error-message"></div>
+            </div>
+        </div>
     </div>
 
     <div class="container">
-        <h1>6ixGang</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>6ixGang</h1>
+            <button onclick="handleLogout()" class="action-button" style="background-color: #666; min-width: auto; padding: 8px 16px;">Logout</button>
+        </div>
         <div class="time-control">
             <label>
                 <input type="checkbox" id="earlyEndCheckbox">
@@ -1200,6 +1268,63 @@
             document.getElementById('registerForm').style.display = 'block';
         }
 
+        function saveUserToLocalStorage(userData, token) {
+            console.log('Saving user data to localStorage:', { userData, token });
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        function loadUserFromLocalStorage() {
+            console.log('Loading user data from localStorage');
+            const token = localStorage.getItem('authToken');
+            const userDataStr = localStorage.getItem('userData');
+            
+            if (token && userDataStr) {
+                try {
+                    const userData = JSON.parse(userDataStr);
+                    console.log('Found stored user data:', userData);
+                    return { token, userData };
+                } catch (error) {
+                    console.error('Error parsing stored user data:', error);
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userData');
+                }
+            }
+            return null;
+        }
+
+        function clearStoredUser() {
+            console.log('Clearing stored user data');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+        }
+
+        async function validateStoredAuth(token) {
+            console.log('Validating stored auth token');
+            try {
+                const response = await fetch('/api/validate-token', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    console.log('Stored token is invalid');
+                    clearStoredUser();
+                    return false;
+                }
+
+                console.log('Stored token is valid');
+                return true;
+            } catch (error) {
+                console.error('Error validating token:', error);
+                clearStoredUser();
+                return false;
+            }
+        }
+
         async function handleLogin() {
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
@@ -1237,6 +1362,9 @@
                 authToken = data.token;
                 currentUser = data.user;
                 isAuthenticated = true;
+
+                // Save to localStorage for persistence
+                saveUserToLocalStorage(currentUser, authToken);
 
                 // Update game state with user data
                 money = currentUser.money;
@@ -1330,6 +1458,9 @@
                 currentUser = data.user;
                 isAuthenticated = true;
 
+                // Save to localStorage for persistence
+                saveUserToLocalStorage(currentUser, authToken);
+
                 // Initialize game state with default values
                 money = currentUser.money;
                 inventory = currentUser.inventory || {};
@@ -1349,77 +1480,138 @@
             }
         }
 
-        // Add function to save game state
-        async function saveGameState() {
-            if (!isAuthenticated || !authToken) {
-                console.log('User not authenticated, skipping save');
-                return;
-            }
-
-            try {
-                console.log('Saving game state...');
-                const response = await fetch('/api/save-game', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        money,
-                        inventory,
-                        itemCosts,
-                        gameTime: currentTime.getTime()
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save game state');
-                }
-
-                console.log('Game state saved successfully');
-            } catch (error) {
-                console.error('Error saving game state:', error);
-            }
+        // Add logout function
+        async function handleLogout() {
+            console.log('Logging out user');
+            clearStoredUser();
+            isAuthenticated = false;
+            currentUser = null;
+            authToken = null;
+            location.reload(); // Reload page to reset game state
         }
-
-        // Modify the handleBuy and handleSell functions to save game state after transactions
-        const originalHandleBuy = handleBuy;
-        handleBuy = async function(item, price) {
-            originalHandleBuy.call(this, item, price);
-            await saveGameState();
-        };
-
-        const originalHandleSell = handleSell;
-        handleSell = async function(item, price) {
-            originalHandleSell.call(this, item, price);
-            await saveGameState();
-        };
-
-        // Modify showGameOver to save final score
-        const originalShowGameOver = showGameOver;
-        showGameOver = async function() {
-            await saveGameState();
-            originalShowGameOver.call(this);
-        };
 
         // Modify your existing window.onload function
         window.onload = async function() {
             console.log('Loading splash screen...');
             
-            // Show splash screen for 1 second total (0.5s animation + 0.5s pause)
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Check for stored authentication first
+            const storedAuth = loadUserFromLocalStorage();
+            if (storedAuth) {
+                console.log('Found stored authentication, validating...');
+                const isValid = await validateStoredAuth(storedAuth.token);
+                
+                if (isValid) {
+                    console.log('Stored authentication is valid, auto-signing in');
+                    authToken = storedAuth.token;
+                    currentUser = storedAuth.userData;
+                    isAuthenticated = true;
+                    
+                    // Update game state with user data
+                    money = currentUser.money;
+                    inventory = currentUser.inventory || {};
+                    itemCosts = currentUser.itemCosts || {};
+                    
+                    // Update UI to show logged-in user
+                    const gameTitle = document.querySelector('h1');
+                    gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                    
+                    // Wait for splash animation then start game
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const splashScreen = document.getElementById('splashScreen');
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        initializeGame();
+                    }, 500);
+                    return;
+                }
+            }
             
-            // Fade out splash screen
-            const splashScreen = document.getElementById('splashScreen');
-            splashScreen.style.opacity = '0';
-            
-            // Remove splash screen after fade out
-            setTimeout(() => {
-                splashScreen.style.display = 'none';
-                console.log('Loading authentication...');
-                showAuthModal();
-            }, 500);
+            // If no valid stored auth, show login form after 2 seconds
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            const splashLoginForm = document.getElementById('splashLoginForm');
+            splashLoginForm.classList.add('visible');
         };
+
+        async function handleSplashLogin() {
+            const username = document.getElementById('splashUsername').value;
+            const password = document.getElementById('splashPassword').value;
+            const errorMessage = document.querySelector('#splashLoginForm .error-message');
+
+            if (!username || !password) {
+                errorMessage.textContent = 'Please fill in all fields';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            try {
+                console.log('Attempting login with username:', username);
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log('Login response status:', response.status);
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Received non-JSON response from server');
+                }
+
+                const data = await response.json();
+                console.log('Login response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                // Store auth token and user data
+                authToken = data.token;
+                currentUser = data.user;
+                isAuthenticated = true;
+
+                // Save to localStorage for persistence
+                saveUserToLocalStorage(currentUser, authToken);
+
+                // Update game state with user data
+                money = currentUser.money;
+                inventory = currentUser.inventory || {};
+                itemCosts = currentUser.itemCosts || {};
+
+                // Fade out splash screen
+                const splashScreen = document.getElementById('splashScreen');
+                splashScreen.style.opacity = '0';
+                
+                // Update UI to show logged-in user and start game
+                const gameTitle = document.querySelector('h1');
+                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    initializeGame();
+                }, 500);
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = error.message || 'Failed to login. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        // Add event listener for Enter key on splash login inputs
+        document.getElementById('splashUsername').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('splashPassword').focus();
+            }
+        });
+
+        document.getElementById('splashPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSplashLogin();
+            }
+        });
 
         // Add this new function to initialize the game
         function initializeGame() {
