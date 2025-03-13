@@ -54,11 +54,16 @@
         .boxes-container {
             display: flex;
             justify-content: center;
+            gap: 20px;
             margin-top: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 800px;
+            padding: 0 20px;
         }
         .box {
-            width: 90%;
-            max-width: 400px;
+            width: 100%;
+            min-width: 300px;
             height: auto;
             min-height: 600px;
             background-color: white;
@@ -68,7 +73,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 10px auto;
+            margin: 10px;
+            flex: 1;
         }
         .box h3 {
             margin: 0 0 15px 0;
@@ -185,6 +191,26 @@
             margin: 10px 0 20px 0;
             font-weight: bold;
             transition: color 0.3s ease;
+        }
+        .time-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .time-control label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+        }
+        .time-control input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
         .time-display.flash {
             color: #ff0000;
@@ -336,8 +362,14 @@
                 box-sizing: border-box;
             }
             
+            .boxes-container {
+                flex-direction: column;
+                padding: 0 10px;
+            }
+            
             .box {
                 width: 100%;
+                min-width: unset;
                 padding: 10px;
                 margin: 5px 0;
             }
@@ -385,11 +417,111 @@
             content: '';
             padding-right: 1px; /* Ensures last button can be centered */
         }
+        .top-score {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        #top-score-display {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            font-size: 1.2em;
+        }
+        .surrounding-scores {
+            margin-top: 20px;
+        }
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .score-item.current {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        .score-item:last-child {
+            border-bottom: none;
+        }
+        .score-rank {
+            width: 40px;
+        }
+        .score-name {
+            flex-grow: 1;
+            text-align: left;
+            margin: 0 10px;
+        }
+        .score-value {
+            min-width: 100px;
+            text-align: right;
+        }
+        #surrounding-scores-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .inventory-section {
+            width: 100%;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .inventory-section h3 {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        
+        #inventory-money {
+            font-size: 20px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        #splashScreen img {
+            max-width: 80%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
+    <!-- Add Splash Screen -->
+    <div id="splashScreen">
+        <img src="6ixGang.jpg" alt="6ixGang">
+    </div>
+
     <div class="container">
         <h1>6ixGang</h1>
+        <div class="time-control">
+            <label>
+                <input type="checkbox" id="earlyEndCheckbox">
+                End game at 10:30 PM
+            </label>
+        </div>
         <div class="time-display" id="time-display">10:00 PM</div>
         <div id="buttons">
             <button class="station-button" onclick="handleStationClick('Kipling', this)">Kipling</button>
@@ -425,18 +557,17 @@
     <!-- Add game over modal HTML -->
     <div id="gameOverModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">Game Over!</div>
-            <p>The clock struck midnight, Your day is done. Try again tomorrow!</p>
-            <p>Final Money: $<span id="final-money">0</span></p>
-            <div class="high-scores">
-                <h3>Top 10 High Scores</h3>
-                <div id="high-scores-list">
-                    <!-- High scores will be dynamically populated -->
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-button confirm" onclick="restartGame()">Play Again</button>
-            </div>
+            <h2>Game Over!</h2>
+            <p>Your final money: $<span id="final-money">0</span></p>
+            
+            <!-- Top Score Section -->
+            <div id="top-score-display"></div>
+            
+            <!-- Surrounding Scores Section -->
+            <h3>Leaderboard</h3>
+            <div id="surrounding-scores-list"></div>
+            
+            <button onclick="location.reload()">Play Again</button>
         </div>
     </div>
 
@@ -468,6 +599,36 @@
         </div>
     </div>
 
+    <!-- Add this new modal for authentication -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-title">Welcome to 6ixGang</div>
+            <div id="authForms">
+                <!-- Login Form -->
+                <div id="loginForm">
+                    <p>Sign in to continue playing</p>
+                    <input type="text" id="loginUsername" class="modal-input" placeholder="Username">
+                    <input type="password" id="loginPassword" class="modal-input" placeholder="Password">
+                    <div class="modal-buttons" style="justify-content: space-between;">
+                        <button class="modal-button" style="background-color: #2196F3; color: white;" onclick="showRegisterForm()">Create Account</button>
+                        <button class="modal-button confirm" onclick="handleLogin()">Sign In</button>
+                    </div>
+                </div>
+                <!-- Register Form -->
+                <div id="registerForm" style="display: none;">
+                    <p>Create a new account</p>
+                    <input type="text" id="registerUsername" class="modal-input" placeholder="Choose a username">
+                    <input type="password" id="registerPassword" class="modal-input" placeholder="Choose a password">
+                    <input type="password" id="confirmPassword" class="modal-input" placeholder="Confirm password">
+                    <div class="modal-buttons" style="justify-content: space-between;">
+                        <button class="modal-button" style="background-color: #2196F3; color: white;" onclick="showLoginForm()">Back to Sign In</button>
+                        <button class="modal-button confirm" onclick="handleRegister()">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Game variables
         let selectedStations = [];
@@ -495,8 +656,35 @@
             'Weed': { min: 10, max: 200 }
         };
 
+        // Add seeded random number generator
+        class SeededRandom {
+            constructor(seed) {
+                this.seed = seed;
+            }
+            
+            // Generate a random number between 0 and 1
+            random() {
+                const x = Math.sin(this.seed++) * 10000;
+                return x - Math.floor(x);
+            }
+            
+            // Generate a random integer between min and max (inclusive)
+            getRandomInt(min, max) {
+                return Math.floor(this.random() * (max - min + 1)) + min;
+            }
+        }
+
+        // Function to get today's seed
+        function getTodaySeed() {
+            const today = new Date();
+            return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        }
+
+        // Initialize seeded random number generator
+        const seededRandom = new SeededRandom(getTodaySeed());
+
         function getRandomPrice(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+            return seededRandom.getRandomInt(min, max);
         }
 
         function generateStationPrices() {
@@ -507,21 +695,16 @@
                 const range = itemPriceRanges[item];
                 const price = getRandomPrice(range.min, range.max);
                 console.log(`Generated price for ${item}:`, price);
-                // Add stock amount between 0 and 10
-                const stock = Math.floor(Math.random() * 11);
+                // Add stock amount between 0 and 10, also seeded
+                const stock = seededRandom.getRandomInt(0, 10);
                 prices[item] = { price: price, stock: stock };
             });
             
             return prices;
         }
 
-        const stationPrices = {
-            'Kipling': generateStationPrices(),
-            'Spadina': generateStationPrices(),
-            'Yonge': generateStationPrices(),
-            'Main': generateStationPrices(),
-            'Kennedy': generateStationPrices()
-        };
+        // Move stationPrices initialization to initializeGame
+        let stationPrices = {};
 
         function formatMoney(amount) {
             return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -555,18 +738,20 @@
                 menuItem.className = 'menu-item';
                 menuItem.innerHTML = `
                     <div class="item-info">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="item-name">${item}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                                <div class="item-name">${item}</div>
+                                <div style="font-size: 16px;">${prices.stock} available</div>
+                            </div>
                             <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
-                        </div>
-                        <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
-                            <strong style="font-size: 16px;">${prices.stock}</strong> units available.<br>
-                            You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
                         </div>
                         <div class="price-info">
                             <div class="price-row">
                                 <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
-                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                                <div style="display: flex; align-items: flex-end; gap: 12px;">
+                                    <div style="color: #666; font-size: 16px;">Average cost: $${formatMoney(averageCost)}</div>
+                                    <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -635,29 +820,29 @@
             if (maxAffordable <= 0) {
                 return;
             }
-
+            
             // Buy maximum affordable amount immediately
             const quantity = maxAffordable;
             const totalCost = price * quantity;
             
-            money -= totalCost;
+                money -= totalCost;
             inventory[item] = (inventory[item] || 0) + quantity;
             itemCosts[item] = (itemCosts[item] || 0) + totalCost;
             
             // Reduce station stock
             stationPrices[lastVisitedStation][item].stock -= quantity;
-            
-            console.log('Purchase successful:', {
+                
+                console.log('Purchase successful:', {
                 item,
                 quantity,
                 totalCost,
-                newMoney: money,
-                newInventory: inventory,
+                    newMoney: money,
+                    newInventory: inventory,
                 itemCosts,
                 remainingStock: stationPrices[lastVisitedStation][item].stock
-            });
-            
-            updateInventoryDisplay();
+                });
+                
+                updateInventoryDisplay();
             updateMenu(lastVisitedStation);
         }
 
@@ -680,6 +865,10 @@
             const quantity = maxAvailable;
             const totalPrice = price * quantity;
             
+            // Add items back to station inventory
+            stationPrices[lastVisitedStation][item].stock += quantity;
+            console.log(`Added ${quantity} ${item}(s) back to ${lastVisitedStation} station inventory`);
+            
             money += totalPrice;
             inventory[item] -= quantity;
             
@@ -695,7 +884,8 @@
             console.log('Sale successful:', {
                 newMoney: money,
                 newInventory: inventory,
-                itemCosts
+                itemCosts,
+                stationStock: stationPrices[lastVisitedStation][item].stock
             });
             
             updateInventoryDisplay();
@@ -721,6 +911,10 @@
             }
             
             if (quantity <= (inventory[currentSellItem] || 0)) {
+                // Add items back to station inventory
+                stationPrices[lastVisitedStation][currentSellItem].stock += quantity;
+                console.log(`Added ${quantity} ${currentSellItem}(s) back to ${lastVisitedStation} station inventory`);
+                
                 money += totalPrice;
                 inventory[currentSellItem] -= quantity;
                 
@@ -736,7 +930,8 @@
                 console.log('Sale successful:', {
                     newMoney: money,
                     newInventory: inventory,
-                    itemCosts
+                    itemCosts,
+                    stationStock: stationPrices[lastVisitedStation][currentSellItem].stock
                 });
                 
                 updateInventoryDisplay();
@@ -795,6 +990,8 @@
         function updateTimeDisplay() {
             console.log('Updating time display');
             const timeDisplay = document.getElementById('time-display');
+            const earlyEndEnabled = document.getElementById('earlyEndCheckbox').checked;
+            
             if (timeDisplay) {
                 const hours = currentTime.getHours();
                 const minutes = currentTime.getMinutes();
@@ -807,24 +1004,130 @@
                 timeDisplay.classList.add('flash');
                 setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
                 
+                // Check for game over condition based on checkbox state
+                if (earlyEndEnabled) {
+                    // End at 10:30 PM (22:30)
+                    if (hours === 22 && minutes >= 30) {
+                        console.log('Game over condition met (early end)');
+                        showGameOver();
+                    }
+                } else {
+                    // Original end time (midnight to 1 AM)
                 if (hours === 0 || (hours === 1 && minutes > 0)) {
-                    console.log('Game over condition met');
+                        console.log('Game over condition met (normal end)');
                     showGameOver();
+                    }
                 }
             }
         }
 
-        function showGameOver() {
-            console.log('Game Over - Time has run out');
+        async function showGameOver() {
+            console.log('Game Over - Starting showGameOver function');
+            
             const modal = document.getElementById('gameOverModal');
             const finalMoneySpan = document.getElementById('final-money');
+            const topScoreDisplay = document.getElementById('top-score-display');
+            const surroundingScoresList = document.getElementById('surrounding-scores-list');
+            
+            console.log('Found DOM elements:', {
+                modal: !!modal,
+                finalMoneySpan: !!finalMoneySpan,
+                topScoreDisplay: !!topScoreDisplay,
+                surroundingScoresList: !!surroundingScoresList
+            });
             
             if (finalMoneySpan) {
                 finalMoneySpan.textContent = formatMoney(money);
             }
             
+            if (topScoreDisplay) topScoreDisplay.innerHTML = '';
+            if (surroundingScoresList) surroundingScoresList.innerHTML = '';
+            
+            if (isAuthenticated && authToken) {
+                try {
+                    console.log('Saving final score:', money);
+                    const saveResponse = await fetch('/api/save-score', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            score: money
+                        })
+                    });
+
+                    if (!saveResponse.ok) {
+                        console.error('Failed to save score:', await saveResponse.text());
+                    } else {
+                        console.log('Score saved successfully, fetching high scores');
+                        
+                        const scoresResponse = await fetch(`/api/highscores?score=${money}&username=${currentUser.username}`);
+                        const scoresData = await scoresResponse.json();
+                        console.log('Received scores data:', scoresData);
+                        
+                        if (scoresResponse.ok && scoresData) {
+                            // Display top score
+                            if (topScoreDisplay && scoresData.topScore) {
+                                console.log('Displaying top score:', scoresData.topScore);
+                                topScoreDisplay.innerHTML = `
+                                    <div style="margin-bottom: 10px;">🏆 All-Time Best 🏆</div>
+                                    <div style="font-size: 24px; font-weight: bold;">${scoresData.topScore.username}</div>
+                                    <div style="font-size: 20px;">$${formatMoney(scoresData.topScore.highScore)}</div>
+                                `;
+                            } else {
+                                console.error('Could not display top score:', {
+                                    hasDisplay: !!topScoreDisplay,
+                                    hasTopScore: !!scoresData.topScore
+                                });
+                            }
+                            
+                            // Display surrounding scores
+                            if (surroundingScoresList && scoresData.surroundingScores) {
+                                console.log('Displaying surrounding scores:', scoresData.surroundingScores);
+                                const scoresHTML = scoresData.surroundingScores
+                                    .map((score, index) => {
+                                        const isCurrentUser = score.username === currentUser.username;
+                                        console.log(`Processing score ${index}:`, {
+                                            username: score.username,
+                                            isCurrentUser,
+                                            score: score.highScore
+                                        });
+                                        return `
+                                            <div class="score-item ${isCurrentUser ? 'current' : ''}" 
+                                                 style="${isCurrentUser ? 'background: rgba(0, 255, 0, 0.1); border: 1px solid rgba(0, 255, 0, 0.3);' : ''}">
+                                                <span class="score-rank">#${index + 1}</span>
+                                                <span class="score-name">${score.username}</span>
+                                                <span class="score-value">$${formatMoney(score.highScore)}</span>
+                                            </div>
+                                        `;
+                                    })
+                                    .join('');
+                                surroundingScoresList.innerHTML = scoresHTML;
+                                console.log('Leaderboard HTML generated:', scoresHTML.length > 0);
+                            } else {
+                                console.error('Could not display surrounding scores:', {
+                                    hasList: !!surroundingScoresList,
+                                    hasScores: !!(scoresData.surroundingScores && scoresData.surroundingScores.length)
+                                });
+                            }
+                        } else {
+                            console.error('Failed to fetch high scores:', scoresData);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in showGameOver:', error);
+                }
+            } else {
+                console.log('User not authenticated, skipping high scores');
+            }
+            
+            // Show the modal
             if (modal) {
                 modal.style.display = 'block';
+                console.log('Game over modal displayed');
+            } else {
+                console.error('Could not find game over modal');
             }
         }
 
@@ -862,13 +1165,313 @@
             console.log('Game restarted successfully');
         }
 
+        // Add these variables at the start of your script section
+        let currentUser = null;
+        let isAuthenticated = false;
+        let authToken = null;
+
+        // Add these functions before your existing window.onload
+        function showAuthModal() {
+            const modal = document.getElementById('authModal');
+            modal.style.display = 'block';
+            showLoginForm(); // Show login form by default
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                console.log('Attempting login with username:', username);
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log('Login response status:', response.status);
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Received non-JSON response from server');
+                }
+
+                const data = await response.json();
+                console.log('Login response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                // Store auth token and user data
+                authToken = data.token;
+                currentUser = data.user;
+                isAuthenticated = true;
+
+                // Update game state with user data
+                money = currentUser.money;
+                inventory = currentUser.inventory || {};
+                itemCosts = currentUser.itemCosts || {};
+
+                document.getElementById('authModal').style.display = 'none';
+                
+                // Update UI to show logged-in user
+                const gameTitle = document.querySelector('h1');
+                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                
+                // Start the game
+                initializeGame();
+            } catch (error) {
+                console.error('Login error:', error);
+                alert(error.message || 'Failed to login. Please try again.');
+            }
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+
+            // Clear any existing warning messages
+            const existingWarning = document.getElementById('registerWarning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+
+            // Create warning message element
+            const warningDiv = document.createElement('div');
+            warningDiv.id = 'registerWarning';
+            warningDiv.style.color = '#f44336';
+            warningDiv.style.marginTop = '10px';
+            warningDiv.style.fontSize = '14px';
+            
+            let warnings = [];
+
+            if (username.length < 3) {
+                warnings.push('Username must be at least 3 characters long');
+            }
+            
+            if (password.length < 6) {
+                warnings.push('Password must be at least 6 characters long');
+            }
+
+            if (warnings.length > 0) {
+                warningDiv.innerHTML = warnings.join('<br>');
+                document.getElementById('registerForm').insertBefore(warningDiv, document.querySelector('#registerForm .modal-buttons'));
+                return;
+            }
+
+            if (!username || !password || !confirmPass) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (password !== confirmPass) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            try {
+                console.log('Attempting registration with username:', username);
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log('Register response status:', response.status);
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Received non-JSON response from server');
+                }
+
+                const data = await response.json();
+                console.log('Register response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                // Store auth token and user data
+                authToken = data.token;
+                currentUser = data.user;
+                isAuthenticated = true;
+
+                // Initialize game state with default values
+                money = currentUser.money;
+                inventory = currentUser.inventory || {};
+                itemCosts = currentUser.itemCosts || {};
+
+                document.getElementById('authModal').style.display = 'none';
+                
+                // Update UI to show logged-in user
+                const gameTitle = document.querySelector('h1');
+                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                
+                // Start the game
+                initializeGame();
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert(error.message || 'Failed to register. Please try again.');
+            }
+        }
+
+        // Add function to save game state
+        async function saveGameState() {
+            if (!isAuthenticated || !authToken) {
+                console.log('User not authenticated, skipping save');
+                return;
+            }
+
+            try {
+                console.log('Saving game state...');
+                const response = await fetch('/api/save-game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        money,
+                        inventory,
+                        itemCosts,
+                        gameTime: currentTime.getTime()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save game state');
+                }
+
+                console.log('Game state saved successfully');
+            } catch (error) {
+                console.error('Error saving game state:', error);
+            }
+        }
+
+        // Modify the handleBuy and handleSell functions to save game state after transactions
+        const originalHandleBuy = handleBuy;
+        handleBuy = async function(item, price) {
+            originalHandleBuy.call(this, item, price);
+            await saveGameState();
+        };
+
+        const originalHandleSell = handleSell;
+        handleSell = async function(item, price) {
+            originalHandleSell.call(this, item, price);
+            await saveGameState();
+        };
+
+        // Modify showGameOver to save final score
+        const originalShowGameOver = showGameOver;
+        showGameOver = async function() {
+            await saveGameState();
+            originalShowGameOver.call(this);
+        };
+
+        // Modify your existing window.onload function
         window.onload = async function() {
-            console.log('Initializing game...');
+            console.log('Loading splash screen...');
+            
+            // Show splash screen for 2 seconds
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Fade out splash screen
+            const splashScreen = document.getElementById('splashScreen');
+            splashScreen.style.opacity = '0';
+            
+            // Remove splash screen after fade out
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                console.log('Loading authentication...');
+                showAuthModal();
+            }, 500);
+        };
+
+        // Add this new function to initialize the game
+        function initializeGame() {
+            console.log('Initializing game...', currentUser);
+            
+            // Generate today's prices and stock levels
+            const todaySeed = getTodaySeed();
+            console.log('Today\'s seed:', todaySeed);
+            seededRandom.seed = todaySeed; // Reset seed to ensure consistent generation
+            
+            stationPrices = {
+                'Kipling': generateStationPrices(),
+                'Spadina': generateStationPrices(),
+                'Yonge': generateStationPrices(),
+                'Main': generateStationPrices(),
+                'Kennedy': generateStationPrices()
+            };
+            
+            console.log('Generated station prices for today:', stationPrices);
             
             lastVisitedStation = 'Kipling';
+            
+            // Default values for a new game
             money = 1000;
             inventory = {};
             itemCosts = {};
+            currentTime = new Date();
+            currentTime.setHours(22, 0, 0);
+            
+            // Only load saved state if it's from today and game wasn't completed
+            if (currentUser && currentUser.gameTime) {
+                const savedDate = new Date(currentUser.gameTime);
+                const today = new Date();
+                const savedHours = savedDate.getHours();
+                const savedMinutes = savedDate.getMinutes();
+                
+                console.log('Checking saved game state:', {
+                    savedDate,
+                    savedHours,
+                    savedMinutes,
+                    isSameDay: savedDate.toDateString() === today.toDateString()
+                });
+                
+                // Check if game is from today and wasn't completed
+                if (savedDate.toDateString() === today.toDateString()) {
+                    const earlyEndEnabled = document.getElementById('earlyEndCheckbox').checked;
+                    const isGameComplete = earlyEndEnabled ? 
+                        (savedHours > 22 || (savedHours === 22 && savedMinutes >= 30)) : // 10:30 PM
+                        (savedHours >= 0 && savedHours < 22); // Midnight to 1 AM
+                    
+                    if (!isGameComplete) {
+                        console.log('Loading incomplete game from today');
+                        money = currentUser.money;
+                        inventory = currentUser.inventory || {};
+                        itemCosts = currentUser.itemCosts || {};
+                        currentTime = savedDate;
+                    } else {
+                        console.log('Found completed game, starting fresh');
+                    }
+                } else {
+                    console.log('Game is from a different day, starting fresh');
+                }
+            } else {
+                console.log('No saved game found, starting fresh');
+            }
             
             const kiplingButton = document.querySelector('.station-button');
             if (kiplingButton) {
@@ -885,11 +1488,14 @@
             updateTimeDisplay();
             
             console.log('Game initialized:', {
+                user: currentUser,
                 station: lastVisitedStation,
                 money,
-                inventory
+                inventory,
+                itemCosts,
+                currentTime
             });
-        };
+        }
 
         window.onclick = function(event) {
             const gameOverModal = document.getElementById('gameOverModal');
