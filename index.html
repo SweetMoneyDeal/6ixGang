@@ -798,6 +798,7 @@
     </div>
 
     <script src="js/eventManager.js"></script>
+    <script src="js/debug.js"></script>
     <script>
         // Game variables
         let selectedStations = [];
@@ -880,7 +881,7 @@
         }
 
         function updateMenu(station) {
-            console.log(`Updating menu for station: ${station}`);
+            debugLog(`Updating menu for station: ${station}`);
             const menuList = document.getElementById('menu-list');
             menuList.innerHTML = '';
             
@@ -893,7 +894,7 @@
             const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
             items.forEach(item => {
                 const prices = stationPrices[station][item];
-                console.log(`${item} prices:`, prices);
+                debugLog(`${item} prices:`, prices);
                 
                 const maxBuyable = Math.min(
                     Math.floor(money / prices.price),
@@ -901,7 +902,7 @@
                 );
                 const currentInventory = inventory[item] || 0;
                 const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
-                console.log(`Maximum buyable ${item}:`, maxBuyable);
+                debugLog(`Maximum buyable ${item}:`, maxBuyable);
                 
                 const menuItem = document.createElement('div');
                 menuItem.className = 'menu-item';
@@ -1157,7 +1158,7 @@
         }
 
         function updateTimeDisplay() {
-            console.log('Updating time display');
+            debugLog('Updating time display');
             const timeDisplay = document.getElementById('time-display');
             const earlyEndEnabled = document.getElementById('earlyEndCheckbox').checked;
             
@@ -1167,7 +1168,7 @@
                 const ampm = hours >= 12 ? 'PM' : 'AM';
                 const displayHours = hours % 12 || 12;
                 const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                console.log('New time string:', timeString);
+                debugLog('New time string:', timeString);
                 timeDisplay.textContent = timeString;
                 
                 timeDisplay.classList.add('flash');
@@ -1177,28 +1178,28 @@
                 if (earlyEndEnabled) {
                     // End at 10:30 PM (22:30)
                     if (hours === 22 && minutes >= 30) {
-                        console.log('Game over condition met (early end)');
+                        debugLog('Game over condition met (early end)');
                         showGameOver();
                     }
                 } else {
                     // Original end time (midnight to 1 AM)
-                if (hours === 0 || (hours === 1 && minutes > 0)) {
-                        console.log('Game over condition met (normal end)');
-                    showGameOver();
+                    if (hours === 0 || (hours === 1 && minutes > 0)) {
+                        debugLog('Game over condition met (normal end)');
+                        showGameOver();
                     }
                 }
             }
         }
 
         async function showGameOver() {
-            console.log('Game Over - Starting showGameOver function');
+            debugLog('Game Over - Starting showGameOver function');
             
             const modal = document.getElementById('gameOverModal');
             const finalMoneySpan = document.getElementById('final-money');
             const topScoreDisplay = document.getElementById('top-score-display');
             const surroundingScoresList = document.getElementById('surrounding-scores-list');
             
-            console.log('Found DOM elements:', {
+            debugLog('Found DOM elements:', {
                 modal: !!modal,
                 finalMoneySpan: !!finalMoneySpan,
                 topScoreDisplay: !!topScoreDisplay,
@@ -1214,7 +1215,7 @@
             
             if (isAuthenticated && authToken) {
                 try {
-                    console.log('Saving final score:', money);
+                    debugLog('Saving final score:', money);
                     const saveResponse = await fetch('/api/save-score', {
                         method: 'POST',
                         headers: {
@@ -1229,23 +1230,23 @@
                     if (!saveResponse.ok) {
                         console.error('Failed to save score:', await saveResponse.text());
                     } else {
-                        console.log('Score saved successfully, fetching high scores');
+                        debugLog('Score saved successfully, fetching high scores');
                         
                         const scoresResponse = await fetch(`/api/highscores?score=${money}&username=${currentUser.username}`);
                         const scoresData = await scoresResponse.json();
-                        console.log('Received scores data:', scoresData);
+                        debugLog('Received scores data:', scoresData);
                         
                         if (scoresResponse.ok && scoresData) {
                             // Display top score
                             if (topScoreDisplay && scoresData.topScore) {
-                                console.log('Displaying top score:', scoresData.topScore);
+                                debugLog('Displaying top score:', scoresData.topScore);
                                 topScoreDisplay.innerHTML = `
                                     <div style="margin-bottom: 10px;">🏆 All-Time Best 🏆</div>
                                     <div style="font-size: 24px; font-weight: bold;">${scoresData.topScore.username}</div>
                                     <div style="font-size: 20px;">$${formatMoney(scoresData.topScore.highScore)}</div>
                                 `;
                             } else {
-                                console.error('Could not display top score:', {
+                                debugError('Could not display top score:', {
                                     hasDisplay: !!topScoreDisplay,
                                     hasTopScore: !!scoresData.topScore
                                 });
@@ -1253,11 +1254,11 @@
                             
                             // Display surrounding scores
                             if (surroundingScoresList && scoresData.surroundingScores) {
-                                console.log('Displaying surrounding scores:', scoresData.surroundingScores);
+                                debugLog('Displaying surrounding scores:', scoresData.surroundingScores);
                                 const scoresHTML = scoresData.surroundingScores
                                     .map((score, index) => {
                                         const isCurrentUser = score.username === currentUser.username;
-                                        console.log(`Processing score ${index}:`, {
+                                        debugLog(`Processing score ${index}:`, {
                                             username: score.username,
                                             isCurrentUser,
                                             score: score.highScore
@@ -1273,9 +1274,9 @@
                                     })
                                     .join('');
                                 surroundingScoresList.innerHTML = scoresHTML;
-                                console.log('Leaderboard HTML generated:', scoresHTML.length > 0);
+                                debugLog('Leaderboard HTML generated:', scoresHTML.length > 0);
                             } else {
-                                console.error('Could not display surrounding scores:', {
+                                debugError('Could not display surrounding scores:', {
                                     hasList: !!surroundingScoresList,
                                     hasScores: !!(scoresData.surroundingScores && scoresData.surroundingScores.length)
                                 });
@@ -1288,20 +1289,20 @@
                     console.error('Error in showGameOver:', error);
                 }
             } else {
-                console.log('User not authenticated, skipping high scores');
+                debugLog('User not authenticated, skipping high scores');
             }
             
             // Show the modal
             if (modal) {
                 modal.style.display = 'block';
-                console.log('Game over modal displayed');
+                debugLog('Game over modal displayed');
             } else {
-                console.error('Could not find game over modal');
+                debugError('Could not find game over modal');
             }
         }
 
         function restartGame() {
-            console.log('Restarting game...');
+            debugLog('Restarting game...');
             
             // Clean up existing resources
             cleanupGameResources();
@@ -1323,7 +1324,7 @@
             // Select Kipling station
             const kiplingButton = document.querySelector('.station-button');
             if (kiplingButton) {
-            kiplingButton.classList.add('selected');
+                kiplingButton.classList.add('selected');
             }
             
             // Update displays
@@ -1331,7 +1332,7 @@
             updateMenu('Kipling');
             updateInventoryDisplay();
             
-            console.log('Game restarted successfully');
+            debugLog('Game restarted successfully');
         }
 
         // Add these variables at the start of your script section
@@ -1357,23 +1358,23 @@
         }
 
         function saveUserToLocalStorage(userData, token) {
-            console.log('Saving user data to localStorage:', { userData, token });
+            debugLog('Saving user data to localStorage:', { userData, token });
             localStorage.setItem('authToken', token);
             localStorage.setItem('userData', JSON.stringify(userData));
         }
 
         function loadUserFromLocalStorage() {
-            console.log('Loading user data from localStorage');
+            debugLog('Loading user data from localStorage');
             const token = localStorage.getItem('authToken');
             const userDataStr = localStorage.getItem('userData');
             
             if (token && userDataStr) {
                 try {
                     const userData = JSON.parse(userDataStr);
-                    console.log('Found stored user data:', userData);
+                    debugLog('Found stored user data:', userData);
                     return { token, userData };
                 } catch (error) {
-                    console.error('Error parsing stored user data:', error);
+                    debugError('Error parsing stored user data:', error);
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('userData');
                 }
@@ -1382,13 +1383,13 @@
         }
 
         function clearStoredUser() {
-            console.log('Clearing stored user data');
+            debugLog('Clearing stored user data');
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
         }
 
         async function validateStoredAuth(token) {
-            console.log('Validating stored auth token');
+            debugLog('Validating stored auth token');
             try {
                 const response = await fetch('/api/validate-token', {
                     method: 'GET',
@@ -1399,15 +1400,15 @@
                 });
 
                 if (!response.ok) {
-                    console.log('Stored token is invalid');
+                    debugLog('Stored token is invalid');
                     clearStoredUser();
                     return false;
                 }
 
-                console.log('Stored token is valid');
+                debugLog('Stored token is valid');
                 return true;
             } catch (error) {
-                console.error('Error validating token:', error);
+                debugError('Error validating token:', error);
                 clearStoredUser();
                 return false;
             }
@@ -1423,7 +1424,7 @@
             }
 
             try {
-                console.log('Attempting login with username:', username);
+                debugLog('Attempting login with username:', username);
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
@@ -1433,14 +1434,14 @@
                     body: JSON.stringify({ username, password })
                 });
 
-                console.log('Login response status:', response.status);
+                debugLog('Login response status:', response.status);
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     throw new Error('Received non-JSON response from server');
                 }
 
                 const data = await response.json();
-                console.log('Login response:', data);
+                debugLog('Login response:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Login failed');
@@ -1518,7 +1519,7 @@
             }
 
             try {
-                console.log('Attempting registration with username:', username);
+                debugLog('Attempting registration with username:', username);
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: {
@@ -1528,14 +1529,14 @@
                     body: JSON.stringify({ username, password })
                 });
 
-                console.log('Register response status:', response.status);
+                debugLog('Register response status:', response.status);
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     throw new Error('Received non-JSON response from server');
                 }
 
                 const data = await response.json();
-                console.log('Register response:', data);
+                debugLog('Register response:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Registration failed');
@@ -1570,7 +1571,7 @@
 
         // Add logout function
         async function handleLogout() {
-            console.log('Logging out user');
+            debugLog('Logging out user');
             clearStoredUser();
             isAuthenticated = false;
             currentUser = null;
@@ -1584,7 +1585,7 @@
 
         // Modify your existing window.onload function
         window.onload = async function() {
-            console.log('Loading splash screen...');
+            debugLog('Loading splash screen...');
             
             // Clean up any existing resources
             cleanupGameResources();
@@ -1592,11 +1593,11 @@
             // Check for stored authentication first
             const storedAuth = loadUserFromLocalStorage();
             if (storedAuth) {
-                console.log('Found stored authentication, validating...');
+                debugLog('Found stored authentication, validating...');
                 const isValid = await validateStoredAuth(storedAuth.token);
                 
                 if (isValid) {
-                    console.log('Stored authentication is valid, auto-signing in');
+                    debugLog('Stored authentication is valid, auto-signing in');
                     authToken = storedAuth.token;
                     currentUser = storedAuth.userData;
                     isAuthenticated = true;
@@ -1640,7 +1641,7 @@
             }
 
             try {
-                console.log('Attempting login with username:', username);
+                debugLog('Attempting login with username:', username);
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
@@ -1650,14 +1651,14 @@
                     body: JSON.stringify({ username, password })
                 });
 
-                console.log('Login response status:', response.status);
+                debugLog('Login response status:', response.status);
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     throw new Error('Received non-JSON response from server');
                 }
 
                 const data = await response.json();
-                console.log('Login response:', data);
+                debugLog('Login response:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Login failed');
@@ -1710,14 +1711,14 @@
 
         // Add this new function to initialize the game
         function initializeGame() {
-            console.log('Initializing game...', currentUser);
+            debugLog('Initializing game...', currentUser);
             
             // Clean up any existing resources
             cleanupGameResources();
             
             // Generate today's prices and stock levels
             const todaySeed = getTodaySeed();
-            console.log('Today\'s seed:', todaySeed);
+            debugLog('Today\'s seed:', todaySeed);
             seededRandom.seed = todaySeed;
             
             stationPrices = {
@@ -1741,7 +1742,7 @@
 
         // Update window.onload to use event manager
         window.onload = async function() {
-            console.log('Loading splash screen...');
+            debugLog('Loading splash screen...');
             
             // Clean up any existing resources
             cleanupGameResources();
@@ -1752,7 +1753,7 @@
 
         // Update handleLogout to clean up resources
         async function handleLogout() {
-            console.log('Logging out user');
+            debugLog('Logging out user');
             clearStoredUser();
             isAuthenticated = false;
             currentUser = null;
@@ -1766,13 +1767,37 @@
 
         // Update restartGame to clean up resources
         function restartGame() {
-            console.log('Restarting game...');
+            debugLog('Restarting game...');
             
             // Clean up existing resources
             cleanupGameResources();
             
-            // Rest of restart code...
-            // ... existing code ...
+            // Reset game variables
+            money = 1000;
+            inventory = {};
+            itemCosts = {};
+            currentTime = new Date();
+            currentTime.setHours(22, 0, 0);
+            lastVisitedStation = 'Kipling';
+            
+            // Reset UI
+            const gameOverModal = document.getElementById('gameOverModal');
+            if (gameOverModal) {
+                gameOverModal.style.display = 'none';
+            }
+            
+            // Select Kipling station
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                kiplingButton.classList.add('selected');
+            }
+            
+            // Update displays
+            updateTimeDisplay();
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            
+            debugLog('Game restarted successfully');
         }
 
         // Memory management
@@ -1813,18 +1838,18 @@
             if (!button.classList.contains('station-button')) return;
             
             const station = button.textContent;
-            console.log('Station clicked:', {
+            debugLog('Station clicked:', {
                 station,
                 previousStation: lastVisitedStation
             });
             
             // Calculate minutes before updating lastVisitedStation
             const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
-            console.log('Minutes to add:', minutesToAdd);
+            debugLog('Minutes to add:', minutesToAdd);
             
             if (minutesToAdd > 0) {
                 currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
-                console.log('New time:', currentTime);
+                debugLog('New time:', currentTime);
                 updateTimeDisplay();
             }
             
