@@ -797,6 +797,7 @@
         </div>
     </div>
 
+    <script src="js/eventManager.js"></script>
     <script>
         // Game variables
         let selectedStations = [];
@@ -909,7 +910,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                             <div style="display: flex; align-items: flex-end; gap: 8px;">
                                 <div class="item-name">${item}</div>
-                                <div style="font-size: 16px; position: relative; top: -3px;">${prices.stock} available</div>
+                                <div style="font-size: 16px; position: relative; top: -3px; color: #666666;">${prices.stock} available</div>
                             </div>
                             <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
                         </div>
@@ -1302,6 +1303,9 @@
         function restartGame() {
             console.log('Restarting game...');
             
+            // Clean up existing resources
+            cleanupGameResources();
+            
             // Reset game variables
             money = 1000;
             inventory = {};
@@ -1319,10 +1323,7 @@
             // Select Kipling station
             const kiplingButton = document.querySelector('.station-button');
             if (kiplingButton) {
-                document.querySelectorAll('.station-button').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                kiplingButton.classList.add('selected');
+            kiplingButton.classList.add('selected');
             }
             
             // Update displays
@@ -1574,12 +1575,19 @@
             isAuthenticated = false;
             currentUser = null;
             authToken = null;
-            location.reload(); // Reload page to reset game state
+            
+            // Clean up resources before reload
+            cleanupGameResources();
+            
+            location.reload();
         }
 
         // Modify your existing window.onload function
         window.onload = async function() {
             console.log('Loading splash screen...');
+            
+            // Clean up any existing resources
+            cleanupGameResources();
             
             // Check for stored authentication first
             const storedAuth = loadUserFromLocalStorage();
@@ -1704,10 +1712,13 @@
         function initializeGame() {
             console.log('Initializing game...', currentUser);
             
+            // Clean up any existing resources
+            cleanupGameResources();
+            
             // Generate today's prices and stock levels
             const todaySeed = getTodaySeed();
             console.log('Today\'s seed:', todaySeed);
-            seededRandom.seed = todaySeed; // Reset seed to ensure consistent generation
+            seededRandom.seed = todaySeed;
             
             stationPrices = {
                 'Kipling': generateStationPrices(),
@@ -1717,206 +1728,127 @@
                 'Kennedy': generateStationPrices()
             };
             
-            console.log('Generated station prices for today:', stationPrices);
-            
-            lastVisitedStation = 'Kipling';
-            
-            // Default values for a new game
-            money = 1000;
-            inventory = {};
-            itemCosts = {};
-            currentTime = new Date();
-            currentTime.setHours(22, 0, 0);
-            
-            // Only load saved state if it's from today and game wasn't completed
-            if (currentUser && currentUser.gameTime) {
-                const savedDate = new Date(currentUser.gameTime);
-                const today = new Date();
-                const savedHours = savedDate.getHours();
-                const savedMinutes = savedDate.getMinutes();
-                
-                console.log('Checking saved game state:', {
-                    savedDate,
-                    savedHours,
-                    savedMinutes,
-                    isSameDay: savedDate.toDateString() === today.toDateString()
-                });
-                
-                // Check if game is from today and wasn't completed
-                if (savedDate.toDateString() === today.toDateString()) {
-                    const earlyEndEnabled = document.getElementById('earlyEndCheckbox').checked;
-                    const isGameComplete = earlyEndEnabled ? 
-                        (savedHours > 22 || (savedHours === 22 && savedMinutes >= 30)) : // 10:30 PM
-                        (savedHours >= 0 && savedHours < 22); // Midnight to 1 AM
-                    
-                    if (!isGameComplete) {
-                        console.log('Loading incomplete game from today');
-                        money = currentUser.money;
-                        inventory = currentUser.inventory || {};
-                        itemCosts = currentUser.itemCosts || {};
-                        currentTime = savedDate;
-                    } else {
-                        console.log('Found completed game, starting fresh');
-                    }
-                } else {
-                    console.log('Game is from a different day, starting fresh');
-                }
-            } else {
-                console.log('No saved game found, starting fresh');
-            }
-            
-            const kiplingButton = document.querySelector('.station-button');
-            if (kiplingButton) {
-            kiplingButton.classList.add('selected');
-            }
-            
-            const moneyDisplay = document.getElementById('menu-money-display');
-            if (moneyDisplay) {
-                moneyDisplay.textContent = `Cash: $${formatMoney(money)}`;
-            }
-            
-            updateMenu('Kipling');
-            updateInventoryDisplay();
-            updateTimeDisplay();
-            
-            console.log('Game initialized:', {
-                user: currentUser,
-                station: lastVisitedStation,
-                money,
-                inventory,
-                itemCosts,
-                currentTime
-            });
+            // Set up event delegation
+            const buttonsContainer = document.getElementById('buttons');
+            eventManager.addEventListener(buttonsContainer, 'click', handleStationClick);
+
+            const modalsContainer = document.querySelector('.container');
+            eventManager.addEventListener(modalsContainer, 'click', handleModalClick);
+
+            // Rest of initialization code...
+            // ... existing code ...
         }
 
-        window.onclick = function(event) {
-            const gameOverModal = document.getElementById('gameOverModal');
-            const highScoreModal = document.getElementById('highScoreModal');
-            const viewHighScoresModal = document.getElementById('viewHighScoresModal');
+        // Update window.onload to use event manager
+        window.onload = async function() {
+            console.log('Loading splash screen...');
             
-            if (event.target === gameOverModal) restartGame();
-            if (event.target === viewHighScoresModal) closeHighScoresModal();
+            // Clean up any existing resources
+            cleanupGameResources();
+            
+            // Rest of onload code...
+            // ... existing code ...
         };
 
-        function showSplashRegisterForm() {
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
+        // Update handleLogout to clean up resources
+        async function handleLogout() {
+            console.log('Logging out user');
+            clearStoredUser();
+            isAuthenticated = false;
+            currentUser = null;
+            authToken = null;
             
-            loginForm.classList.remove('visible');
-            setTimeout(() => {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                setTimeout(() => {
-                    registerForm.classList.add('visible');
-                }, 50);
-            }, 500);
+            // Clean up resources before reload
+            cleanupGameResources();
+            
+            location.reload();
         }
 
-        function showSplashLoginForm() {
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
+        // Update restartGame to clean up resources
+        function restartGame() {
+            console.log('Restarting game...');
             
-            registerForm.classList.remove('visible');
-            setTimeout(() => {
-                registerForm.style.display = 'none';
-                loginForm.style.display = 'block';
-                setTimeout(() => {
-                    loginForm.classList.add('visible');
-                }, 50);
-            }, 500);
+            // Clean up existing resources
+            cleanupGameResources();
+            
+            // Rest of restart code...
+            // ... existing code ...
         }
 
-        async function handleSplashRegister() {
-            const username = document.getElementById('splashRegisterUsername').value;
-            const password = document.getElementById('splashRegisterPassword').value;
-            const confirmPass = document.getElementById('splashConfirmPassword').value;
-            const errorMessage = document.querySelector('#splashRegisterForm .error-message');
+        // Memory management
+        function cleanupGameResources() {
+            // Clear game state
+            selectedStations = [];
+            inventory = {};
+            money = 1000;
+            highScores = [];
+            currentStation = null;
+            lastVisitedStation = 'Kipling';
+            itemCosts = {};
+            itemBuyStations = {};
+            currentSellItem = null;
+            currentSellPrice = 0;
+            currentTime = new Date();
+            currentTime.setHours(22, 0, 0);
 
-            // Clear any existing error messages
-            errorMessage.style.display = 'none';
-            errorMessage.textContent = '';
+            // Clear event listeners and cached elements
+            eventManager.cleanup();
 
-            let warnings = [];
+            // Clear any intervals
+            if (window.gameInterval) {
+                clearInterval(window.gameInterval);
+                window.gameInterval = null;
+            }
 
-            if (username.length < 3) {
-                warnings.push('Username must be at least 3 characters long');
+            // Clear any timeouts
+            if (window.gameTimeouts) {
+                window.gameTimeouts.forEach(timeout => clearTimeout(timeout));
+                window.gameTimeouts = [];
+            }
+        }
+
+        // Event delegation for station buttons
+        function handleStationClick(event) {
+            const button = event.target;
+            if (!button.classList.contains('station-button')) return;
+            
+            const station = button.textContent;
+            console.log('Station clicked:', {
+                station,
+                previousStation: lastVisitedStation
+            });
+            
+            // Calculate minutes before updating lastVisitedStation
+            const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
+            console.log('Minutes to add:', minutesToAdd);
+            
+            if (minutesToAdd > 0) {
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                console.log('New time:', currentTime);
+                updateTimeDisplay();
             }
             
-            if (password.length < 6) {
-                warnings.push('Password must be at least 6 characters long');
-            }
+            // Update station after time calculation
+            lastVisitedStation = station;
+            
+            document.querySelectorAll('.station-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            button.classList.add('selected');
+            
+            updateMenu(station);
+            updateInventoryDisplay();
+        }
 
-            if (warnings.length > 0) {
-                errorMessage.textContent = warnings.join('\n');
-                errorMessage.style.display = 'block';
-                return;
-            }
+        // Event delegation for modal clicks
+        function handleModalClick(event) {
+            const modal = event.target;
+            if (!modal.classList.contains('modal')) return;
 
-            if (!username || !password || !confirmPass) {
-                errorMessage.textContent = 'Please fill in all fields';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            if (password !== confirmPass) {
-                errorMessage.textContent = 'Passwords do not match';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            try {
-                console.log('Attempting registration with username:', username);
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                console.log('Register response status:', response.status);
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Received non-JSON response from server');
-                }
-
-                const data = await response.json();
-                console.log('Register response:', data);
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Registration failed');
-                }
-
-                // Store auth token and user data
-                authToken = data.token;
-                currentUser = data.user;
-                isAuthenticated = true;
-
-                // Save to localStorage for persistence
-                saveUserToLocalStorage(currentUser, authToken);
-
-                // Initialize game state with default values
-                money = currentUser.money;
-                inventory = currentUser.inventory || {};
-                itemCosts = currentUser.itemCosts || {};
-
-                // Fade out splash screen
-                const splashScreen = document.getElementById('splashScreen');
-                splashScreen.style.opacity = '0';
-                
-                // Update UI to show logged-in user
-                const gameTitle = document.querySelector('h1');
-                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
-                
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    initializeGame();
-                }, 500);
-            } catch (error) {
-                console.error('Registration error:', error);
-                errorMessage.textContent = error.message || 'Failed to register. Please try again.';
-                errorMessage.style.display = 'block';
+            if (modal.id === 'gameOverModal') {
+                restartGame();
+            } else if (modal.id === 'viewHighScoresModal') {
+                closeHighScoresModal();
             }
         }
 
