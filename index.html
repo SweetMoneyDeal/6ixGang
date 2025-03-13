@@ -505,6 +505,19 @@
             max-width: 80%;
             max-height: 80vh;
             object-fit: contain;
+            animation: bounceZoom 0.5s ease-in-out forwards;
+        }
+
+        @keyframes bounceZoom {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.2); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.2); }
+            60% { transform: scale(1); }
+            65% { transform: scale(1.05); }
+            70% { transform: scale(1); }
+            75% { transform: scale(1.02); }
+            80%, 100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -741,7 +754,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                             <div style="display: flex; align-items: flex-end; gap: 8px;">
                                 <div class="item-name">${item}</div>
-                                <div style="font-size: 16px;">${prices.stock} available</div>
+                                <div style="font-size: 16px; position: relative; top: -3px;">${prices.stock} available</div>
                             </div>
                             <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
                         </div>
@@ -1393,8 +1406,8 @@
         window.onload = async function() {
             console.log('Loading splash screen...');
             
-            // Show splash screen for 2 seconds
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Show splash screen for 1 second total (0.5s animation + 0.5s pause)
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Fade out splash screen
             const splashScreen = document.getElementById('splashScreen');
