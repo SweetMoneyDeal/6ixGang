@@ -507,7 +507,7 @@
             max-width: 80%;
             max-height: 60vh;
             object-fit: contain;
-            animation: bounceZoom 1.5s ease-in-out;
+            animation: bounceZoom 1s ease-in-out;
             margin-top: 40px;
         }
 
@@ -582,7 +582,7 @@
                 <input type="text" id="splashUsername" class="modal-input" placeholder="Username">
                 <input type="password" id="splashPassword" class="modal-input" placeholder="Password">
                 <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                    <button class="secondary" onclick="showRegisterForm()">Create Account</button>
+                    <button class="secondary" onclick="showAuthModalWithRegister()">Create Account</button>
                     <button class="primary" onclick="handleSplashLogin()">Sign In</button>
                 </div>
                 <div class="error-message"></div>
@@ -1708,6 +1708,17 @@
             if (event.target === gameOverModal) restartGame();
             if (event.target === viewHighScoresModal) closeHighScoresModal();
         };
+
+        function showAuthModalWithRegister() {
+            const splashScreen = document.getElementById('splashScreen');
+            splashScreen.style.opacity = '0';
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                const authModal = document.getElementById('authModal');
+                authModal.style.display = 'block';
+                showRegisterForm();
+            }, 500);
+        }
     </script>
 </body>
 </html>
