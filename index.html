@@ -527,6 +527,54 @@
             opacity: 1;
         }
 
+        #splashLoginForm input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        #splashLoginForm button {
+            padding: 8px;
+            font-size: 18px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            min-width: 100px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #splashLoginForm button.primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #splashLoginForm button.primary:hover {
+            background-color: #45a049;
+        }
+
+        #splashLoginForm button.secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        #splashLoginForm button.secondary:hover {
+            background-color: #1976D2;
+        }
+
+        #splashLoginForm .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
         #splashRegisterForm {
             display: none;
             opacity: 0;
@@ -556,13 +604,16 @@
         }
 
         #splashRegisterForm button {
-            padding: 8px 16px;
+            padding: 8px;
+            font-size: 18px;
             border: none;
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 16px;
-            margin: 5px;
             min-width: 100px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #splashRegisterForm button.primary {
@@ -570,9 +621,17 @@
             color: white;
         }
 
+        #splashRegisterForm button.primary:hover {
+            background-color: #45a049;
+        }
+
         #splashRegisterForm button.secondary {
             background-color: #2196F3;
             color: white;
+        }
+
+        #splashRegisterForm button.secondary:hover {
+            background-color: #1976D2;
         }
 
         #splashRegisterForm .error-message {
