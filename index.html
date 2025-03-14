@@ -505,22 +505,27 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background-color: #f0f0f0;
             display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             z-index: 2000;
-            transition: opacity 0.5s ease-in-out;
             opacity: 0;
-            padding: 0;
+            transition: opacity 0.5s ease-in-out;
         }
         
         #splashScreen.visible {
             display: flex;
+            justify-content: center;
+            align-items: center;
             opacity: 1;
+        }
+        
+        .splash-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         #splashScreen img {
@@ -528,10 +533,10 @@
             max-height: 40vh;
             object-fit: contain;
             animation: bounceZoom 1s ease-in-out;
-            margin: 0 0 40px 0;
+            margin-bottom: 30px;
         }
-
-        #splashLoginForm {
+        
+        #splashLoginForm, #splashRegisterForm {
             display: none;
             opacity: 0;
             transition: all 0.5s ease-in-out;
@@ -541,13 +546,16 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 320px;
             text-align: center;
-            z-index: 2001;
         }
-
+        
         #splashLoginForm.visible {
             display: block;
             opacity: 1;
-            pointer-events: auto;
+        }
+        
+        #splashRegisterForm.visible {
+            display: block;
+            opacity: 1;
         }
 
         #splashLoginForm input {
@@ -603,26 +611,6 @@
         .error-message.visible {
             display: block;
             opacity: 1;
-        }
-
-        #splashRegisterForm {
-            display: none;
-            opacity: 0;
-            transition: all 0.5s ease-in-out;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 320px;
-            text-align: center;
-            z-index: 2001;
-            visibility: hidden;
-        }
-
-        #splashRegisterForm.visible {
-            display: block;
-            opacity: 1;
-            visibility: visible;
         }
 
         #splashRegisterForm input {
@@ -685,28 +673,30 @@
 <body>
     <!-- Add Splash Screen -->
     <div id="splashScreen">
-        <img src="6ixGang.jpg" alt="6ixGang">
-        <div id="splashLoginForm">
-            <div id="splashLoginInputs">
-                <input type="text" id="splashUsername" class="modal-input" placeholder="Username">
-                <input type="password" id="splashPassword" class="modal-input" placeholder="Password">
-                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                    <button class="secondary" onclick="showSplashRegisterForm()">Create Account</button>
-                    <button class="primary" onclick="handleSplashLogin()">Sign In</button>
+        <div class="splash-content">
+            <img src="6ixGang.jpg" alt="6ixGang">
+            <div id="splashLoginForm">
+                <div id="splashLoginInputs">
+                    <input type="text" id="splashUsername" class="modal-input" placeholder="Username">
+                    <input type="password" id="splashPassword" class="modal-input" placeholder="Password">
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                        <button class="secondary" onclick="showSplashRegisterForm()">Create Account</button>
+                        <button class="primary" onclick="handleSplashLogin()">Sign In</button>
+                    </div>
+                    <div class="error-message"></div>
                 </div>
-                <div class="error-message"></div>
             </div>
-        </div>
-        <div id="splashRegisterForm">
-            <div id="splashRegisterInputs">
-                <input type="text" id="splashRegisterUsername" class="modal-input" placeholder="Choose a username">
-                <input type="password" id="splashRegisterPassword" class="modal-input" placeholder="Choose a password">
-                <input type="password" id="splashConfirmPassword" class="modal-input" placeholder="Confirm password">
-                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                    <button class="secondary" onclick="showSplashLoginForm()">Back to Sign In</button>
-                    <button class="primary" onclick="handleSplashRegister()">Register</button>
+            <div id="splashRegisterForm">
+                <div id="splashRegisterInputs">
+                    <input type="text" id="splashRegisterUsername" class="modal-input" placeholder="Choose a username">
+                    <input type="password" id="splashRegisterPassword" class="modal-input" placeholder="Choose a password">
+                    <input type="password" id="splashConfirmPassword" class="modal-input" placeholder="Confirm password">
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                        <button class="secondary" onclick="showSplashLoginForm()">Back to Sign In</button>
+                        <button class="primary" onclick="handleSplashRegister()">Register</button>
+                    </div>
+                    <div class="error-message"></div>
                 </div>
-                <div class="error-message"></div>
             </div>
         </div>
     </div>
