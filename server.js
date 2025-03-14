@@ -8,10 +8,16 @@ const app = express();
 
 // Use environment variable for port or default to 8080
 const PORT = process.env.PORT || 8080;
-const HOST = '0.0.0.0';
+// Remove hardcoded HOST
+const HOST = process.env.HOST || 'localhost';
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+// Connect to MongoDB with options for internet deployment
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+})
     .then(() => console.log('MongoDB connection successful'))
     .catch(err => console.error('MongoDB connection error:', err));
 
@@ -23,13 +29,24 @@ app.use(express.static(path.join(__dirname)));
 
 // CORS and Security headers
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Update CORS to only allow specific origins in production
+    const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['*'];
+    const origin = req.headers.origin;
+    
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    }
+    
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
     res.setHeader('Access-Control-Allow-Credentials', true);
+    
+    // Enhanced security headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';");
     
     // Handle preflight
     if (req.method === 'OPTIONS') {
@@ -281,19 +298,22 @@ app.get('*', (req, res) => {
     }
 });
 
-// Basic error handling
+// Production error handling
 app.use((err, req, res, next) => {
     console.error('Error:', err.stack);
-    // Always return JSON for API routes
-    if (req.path.startsWith('/api/')) {
-        res.status(500).json({ error: 'Something broke!', details: err.message });
+    // Don't expose error details in production
+    if (process.env.NODE_ENV === 'production') {
+        res.status(500).json({ error: 'Internal server error' });
     } else {
-        res.status(500).send('Server Error');
+        res.status(500).json({ 
+            error: 'Something broke!', 
+            details: err.message 
+        });
     }
 });
 
 // Start the server
-app.listen(PORT, HOST, () => {
-    console.log(`Server is running on http://${HOST}:${PORT}`);
-    console.log('Press Ctrl+C to quit.');
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 }); 
