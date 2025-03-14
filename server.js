@@ -4,6 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const GameState = require('./models/gameState');
 const app = express();
 
 // Use environment variable for port or default to 8080
@@ -272,6 +273,88 @@ apiRouter.get('/highscores', async (req, res) => {
             details: error.message,
             success: false
         });
+    }
+});
+
+apiRouter.post('/save-game-state', authenticateToken, async (req, res) => {
+    try {
+        console.log('[DEBUG] Save game state request received:', req.body);
+        const { money, inventory, itemCosts, lastVisitedStation, currentTime } = req.body;
+
+        // Find existing game state or create new one
+        let gameState = await GameState.findOne({ userId: req.user._id });
+        
+        if (!gameState) {
+            gameState = new GameState({
+                userId: req.user._id,
+                money,
+                inventory,
+                itemCosts,
+                lastVisitedStation,
+                currentTime: new Date(currentTime)
+            });
+        } else {
+            // Update existing game state
+            gameState.money = money;
+            gameState.inventory = inventory;
+            gameState.itemCosts = itemCosts;
+            gameState.lastVisitedStation = lastVisitedStation;
+            gameState.currentTime = new Date(currentTime);
+        }
+
+        await gameState.save();
+        console.log('[DEBUG] Game state saved successfully for user:', req.user.username);
+        
+        res.json({ message: 'Game state saved successfully' });
+    } catch (error) {
+        console.error('[DEBUG] Save game state error:', error);
+        res.status(500).json({ error: 'Failed to save game state' });
+    }
+});
+
+apiRouter.get('/load-game-state', authenticateToken, async (req, res) => {
+    try {
+        console.log('[DEBUG] Load game state request received for user:', req.user.username);
+        
+        const gameState = await GameState.findOne({ userId: req.user._id });
+        
+        if (!gameState) {
+            console.log('[DEBUG] No game state found for user:', req.user.username);
+            return res.status(404).json({ error: 'No game state found' });
+        }
+
+        console.log('[DEBUG] Game state loaded successfully for user:', req.user.username);
+        res.json({
+            money: gameState.money,
+            inventory: Object.fromEntries(gameState.inventory),
+            itemCosts: Object.fromEntries(gameState.itemCosts),
+            lastVisitedStation: gameState.lastVisitedStation,
+            currentTime: gameState.currentTime
+        });
+    } catch (error) {
+        console.error('[DEBUG] Load game state error:', error);
+        res.status(500).json({ error: 'Failed to load game state' });
+    }
+});
+
+apiRouter.get('/validate-token', authenticateToken, async (req, res) => {
+    try {
+        console.log('[DEBUG] Token validation request received');
+        
+        // Check if game state exists
+        const gameState = await GameState.findOne({ userId: req.user._id });
+        
+        res.json({
+            valid: true,
+            user: {
+                id: req.user._id,
+                username: req.user.username
+            },
+            hasGameState: !!gameState
+        });
+    } catch (error) {
+        console.error('[DEBUG] Token validation error:', error);
+        res.status(500).json({ error: 'Failed to validate token' });
     }
 });
 
