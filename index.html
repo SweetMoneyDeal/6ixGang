@@ -1409,19 +1409,20 @@
         }
 
         function saveUserToLocalStorage(userData, token) {
-            debugLog('Saving user data to localStorage:', { userData, token });
+            console.log('[DEBUG] Saving game state to localStorage');
             try {
-                // Save the complete user state
                 const gameState = {
-                    userData,
-                    token,
+                    token: token,
+                    userData: userData,
                     gameData: {
-                        money,
-                        inventory,
-                        itemCosts,
-                        lastVisitedStation
+                        money: money,
+                        inventory: inventory,
+                        itemCosts: itemCosts,
+                        lastVisitedStation: lastVisitedStation,
+                        currentTime: currentTime.toISOString()
                     }
                 };
+                console.log('[DEBUG] Preparing to save game state:', gameState);
                 localStorage.setItem('gameState', JSON.stringify(gameState));
                 console.log('[DEBUG] Game state saved successfully');
             } catch (error) {
@@ -1436,6 +1437,12 @@
                 if (gameStateStr) {
                     const gameState = JSON.parse(gameStateStr);
                     console.log('[DEBUG] Found stored game state:', gameState);
+                    
+                    // Restore the currentTime from ISO string
+                    if (gameState.gameData && gameState.gameData.currentTime) {
+                        gameState.gameData.currentTime = new Date(gameState.gameData.currentTime);
+                    }
+                    
                     return gameState;
                 }
             } catch (error) {
@@ -1799,33 +1806,17 @@
 
         // Update window.onload function
         window.onload = async function() {
-            console.log('[DEBUG] window.onload triggered');
-            console.log('[DEBUG] Loading splash screen...');
+            console.log('[DEBUG] Window loaded, initializing game...');
             
-            // Hide main container
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.display = 'none';
-                console.log('[DEBUG] Main container hidden');
-            }
-            
-            // Clean up any existing resources
-            cleanupGameResources();
-            console.log('[DEBUG] Resources cleaned up');
-            
-            // Show splash screen immediately
             const splashScreen = document.getElementById('splashScreen');
-            console.log('[DEBUG] Splash screen element:', splashScreen);
-            
             if (!splashScreen) {
                 console.error('[DEBUG] Could not find splash screen element');
                 return;
             }
-
-            // First set display to flex and force a reflow
-            splashScreen.style.display = 'flex';
-            splashScreen.offsetHeight;
-            console.log('[DEBUG] Set splash screen display to flex');
+            
+            // First set display to block
+            splashScreen.style.display = 'block';
+            console.log('[DEBUG] Set splash screen display to block');
             
             // Add visible class in next frame
             requestAnimationFrame(() => {
@@ -1837,7 +1828,7 @@
             const storedAuth = loadUserFromLocalStorage();
             console.log('[DEBUG] Loaded stored auth:', storedAuth ? 'Found' : 'Not found');
             
-            if (storedAuth) {
+            if (storedAuth && storedAuth.token && storedAuth.userData) {
                 console.log('[DEBUG] Found stored authentication, validating...');
                 const isValid = await validateStoredAuth(storedAuth.token);
                 
@@ -1847,10 +1838,16 @@
                     currentUser = storedAuth.userData;
                     isAuthenticated = true;
                     
-                    // Update game state with user data
-                    money = currentUser.money;
-                    inventory = currentUser.inventory || {};
-                    itemCosts = currentUser.itemCosts || {};
+                    // Update game state with stored data
+                    if (storedAuth.gameData) {
+                        money = storedAuth.gameData.money;
+                        inventory = storedAuth.gameData.inventory || {};
+                        itemCosts = storedAuth.gameData.itemCosts || {};
+                        lastVisitedStation = storedAuth.gameData.lastVisitedStation || 'Kipling';
+                        if (storedAuth.gameData.currentTime) {
+                            currentTime = new Date(storedAuth.gameData.currentTime);
+                        }
+                    }
                     
                     // Update UI to show logged-in user
                     const gameTitle = document.querySelector('h1');
