@@ -1493,6 +1493,96 @@
         async function saveGameState() {
             // ... rest of existing code ...
         }
+
+        // Add login handler function
+        async function handleSplashLogin() {
+            console.log('[DEBUG] Starting login process');
+            const username = document.getElementById('splashUsername').value;
+            const password = document.getElementById('splashPassword').value;
+            const errorMessage = document.querySelector('#splashLoginForm .error-message');
+
+            // Clear any existing error messages
+            if (errorMessage) {
+                errorMessage.classList.remove('visible');
+                errorMessage.textContent = '';
+            }
+
+            // Basic validation
+            if (!username || !password) {
+                console.log('[DEBUG] Login validation failed - missing fields');
+                if (errorMessage) {
+                    errorMessage.textContent = 'Please fill in all fields';
+                    errorMessage.classList.add('visible');
+                }
+                return;
+            }
+
+            try {
+                console.log('[DEBUG] Attempting login with username:', username);
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log('[DEBUG] Login response status:', response.status);
+                const data = await response.json();
+                console.log('[DEBUG] Login response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                // Login successful
+                console.log('[DEBUG] Login successful');
+                authToken = data.token;
+                currentUser = data.user;
+                isAuthenticated = true;
+
+                // Initialize game state from server data if available
+                if (data.user) {
+                    money = data.user.money || 1000;
+                    inventory = data.user.inventory || {};
+                    itemCosts = data.user.itemCosts || {};
+                }
+
+                // Save to localStorage
+                saveUserToLocalStorage(currentUser, authToken);
+
+                // Fade out login form first
+                const loginForm = document.getElementById('splashLoginForm');
+                if (loginForm) {
+                    loginForm.classList.remove('visible');
+                }
+
+                // Update UI to show logged-in user
+                const gameTitle = document.querySelector('h1');
+                if (gameTitle) {
+                    gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                }
+
+                // Wait for login form fade out before hiding splash screen
+                setTimeout(() => {
+                    const splashScreen = document.getElementById('splashScreen');
+                    if (splashScreen) {
+                        splashScreen.classList.remove('visible');
+                        setTimeout(() => {
+                            splashScreen.style.display = 'none';
+                            initializeGame();
+                        }, 500);
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                if (errorMessage) {
+                    errorMessage.textContent = error.message || 'Failed to login. Please try again.';
+                    errorMessage.classList.add('visible');
+                }
+            }
+        }
     </script>
 </body>
 </html>
