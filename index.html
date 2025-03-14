@@ -1561,7 +1561,7 @@
                 saveUserToLocalStorage(currentUser, authToken);
 
                 // Initialize game state with default values
-                money = currentUser.money;
+                money = currentUser.money || 1000;
                 inventory = currentUser.inventory || {};
                 itemCosts = currentUser.itemCosts || {};
 
@@ -1955,6 +1955,97 @@
                 handleSplashRegister();
             }
         });
+
+        async function handleSplashRegister() {
+            const username = document.getElementById('splashRegisterUsername').value;
+            const password = document.getElementById('splashRegisterPassword').value;
+            const confirmPass = document.getElementById('splashConfirmPassword').value;
+            const errorMessage = document.querySelector('#splashRegisterForm .error-message');
+
+            // Clear any existing warning messages
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+
+            // Validate inputs
+            if (!username || !password || !confirmPass) {
+                errorMessage.textContent = 'Please fill in all fields';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            if (username.length < 3) {
+                errorMessage.textContent = 'Username must be at least 3 characters long';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMessage.textContent = 'Password must be at least 6 characters long';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPass) {
+                errorMessage.textContent = 'Passwords do not match';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            try {
+                console.log('[DEBUG] Attempting registration with username:', username);
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log('[DEBUG] Register response status:', response.status);
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Received non-JSON response from server');
+                }
+
+                const data = await response.json();
+                console.log('[DEBUG] Register response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                // Store auth token and user data
+                authToken = data.token;
+                currentUser = data.user;
+                isAuthenticated = true;
+
+                // Save to localStorage for persistence
+                saveUserToLocalStorage(currentUser, authToken);
+
+                // Initialize game state with default values
+                money = currentUser.money || 1000;
+                inventory = currentUser.inventory || {};
+                itemCosts = currentUser.itemCosts || {};
+
+                // Fade out splash screen
+                const splashScreen = document.getElementById('splashScreen');
+                splashScreen.style.opacity = '0';
+                
+                // Update UI to show logged-in user and start game
+                const gameTitle = document.querySelector('h1');
+                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    initializeGame();
+                }, 500);
+            } catch (error) {
+                console.error('Registration error:', error);
+                errorMessage.textContent = error.message || 'Failed to register. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        }
     </script>
 </body>
 </html>
