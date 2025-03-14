@@ -66,12 +66,12 @@
             width: 100%;
             max-width: 800px;
             padding: 0 20px;
+            box-sizing: border-box;
         }
         .box {
             width: 100%;
             min-width: 300px;
-            height: auto;
-            min-height: 600px;
+            max-height: calc(100vh - 250px); /* Subtract header height and margins */
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -81,6 +81,8 @@
             align-items: center;
             margin: 10px;
             flex: 1;
+            overflow-y: auto; /* Enable vertical scrolling */
+            box-sizing: border-box;
         }
         .box h3 {
             margin: 0 0 15px 0;
@@ -103,6 +105,7 @@
         #menu-list {
             width: 100%;
             box-sizing: border-box;
+            overflow-y: auto;
         }
         .menu-item {
             display: flex;
@@ -141,6 +144,7 @@
             align-items: center;
             width: 100%;
             gap: 8px;
+            flex-wrap: wrap; /* Allow buttons to wrap on small screens */
         }
         .buy-price, .sell-price {
             font-size: 18px;
@@ -159,7 +163,7 @@
         }
         .action-button {
             padding: 8px;
-            font-size: 18px;
+            font-size: 16px;
             border: none;
             border-radius: 3px;
             cursor: pointer;
@@ -170,6 +174,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            white-space: nowrap;
         }
         .action-button:hover {
             background-color: #45a049;
@@ -378,10 +383,11 @@
                 min-width: unset;
                 padding: 10px;
                 margin: 5px 0;
+                max-height: calc(100vh - 200px);
             }
             
             .item-name {
-                font-size: 24px;
+                font-size: 20px;
             }
             
             .buy-price, .sell-price {
@@ -389,10 +395,8 @@
             }
             
             .action-button {
-                font-size: 16px;
-                padding: 6px;
-                min-width: 90px;
-                height: 36px;
+                width: 100%;
+                margin: 5px 0;
             }
             
             .money-display {
@@ -401,6 +405,11 @@
             
             h3 {
                 font-size: 22px;
+            }
+            
+            .price-row {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
         #buttons {
