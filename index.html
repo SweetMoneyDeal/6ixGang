@@ -508,7 +508,7 @@
             width: 100vw;
             height: 100vh;
             background-color: #f0f0f0;
-            display: none; /* Changed from flex to none initially */
+            display: none;
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
@@ -534,7 +534,7 @@
         #splashLoginForm {
             display: none;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: all 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 8px;
@@ -542,7 +542,7 @@
             width: 300px;
             text-align: center;
             margin-top: 40px;
-            pointer-events: none;
+            z-index: 2001;
         }
 
         #splashLoginForm.visible {
@@ -1731,14 +1731,12 @@
                 return;
             }
 
-            // First set display to flex
+            // First set display to flex and force a reflow
             splashScreen.style.display = 'flex';
+            splashScreen.offsetHeight;
             console.log('[DEBUG] Set splash screen display to flex');
             
-            // Force a reflow
-            splashScreen.offsetHeight;
-            
-            // Then set opacity to 1 through the visible class
+            // Add visible class in next frame
             requestAnimationFrame(() => {
                 splashScreen.classList.add('visible');
                 console.log('[DEBUG] Added visible class to splash screen');
@@ -1783,7 +1781,7 @@
             
             // If no valid stored auth, show login form after splash screen animation
             console.log('[DEBUG] No valid stored auth, preparing to show login form');
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for splash screen animation
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             const splashLoginForm = document.getElementById('splashLoginForm');
             console.log('[DEBUG] Login form element:', splashLoginForm);
@@ -1793,14 +1791,12 @@
                 return;
             }
 
-            // First set display to block
+            // First set display to block and force a reflow
             splashLoginForm.style.display = 'block';
+            splashLoginForm.offsetHeight;
             console.log('[DEBUG] Set login form display to block');
             
-            // Force a reflow
-            splashLoginForm.offsetHeight;
-            
-            // Then set opacity to 1 through the visible class
+            // Add visible class in next frame
             requestAnimationFrame(() => {
                 splashLoginForm.classList.add('visible');
                 console.log('[DEBUG] Added visible class to login form');
@@ -1810,6 +1806,145 @@
                 });
             });
         };
+
+        function showSplashRegisterForm() {
+            console.log('[DEBUG] Showing splash register form');
+            const loginForm = document.getElementById('splashLoginForm');
+            const registerForm = document.getElementById('splashRegisterForm');
+            
+            if (loginForm && registerForm) {
+                // First hide login form
+                loginForm.classList.remove('visible');
+                setTimeout(() => {
+                    loginForm.style.display = 'none';
+                    
+                    // Then show register form
+                    registerForm.style.display = 'block';
+                    registerForm.offsetHeight; // Force reflow
+                    requestAnimationFrame(() => {
+                        registerForm.classList.add('visible');
+                    });
+                }, 500);
+            }
+        }
+
+        function showSplashLoginForm() {
+            console.log('[DEBUG] Showing splash login form');
+            const loginForm = document.getElementById('splashLoginForm');
+            const registerForm = document.getElementById('splashRegisterForm');
+            
+            if (loginForm && registerForm) {
+                // First hide register form
+                registerForm.classList.remove('visible');
+                setTimeout(() => {
+                    registerForm.style.display = 'none';
+                    
+                    // Then show login form
+                    loginForm.style.display = 'block';
+                    loginForm.offsetHeight; // Force reflow
+                    requestAnimationFrame(() => {
+                        loginForm.classList.add('visible');
+                    });
+                }, 500);
+            }
+        }
+
+        async function handleSplashRegister() {
+            console.log('[DEBUG] Starting registration process');
+            const username = document.getElementById('splashRegisterUsername').value;
+            const password = document.getElementById('splashRegisterPassword').value;
+            const confirmPassword = document.getElementById('splashConfirmPassword').value;
+            const errorMessage = document.querySelector('#splashRegisterForm .error-message');
+
+            // Clear any existing error messages
+            if (errorMessage) {
+                errorMessage.classList.remove('visible');
+                errorMessage.textContent = '';
+            }
+
+            // Basic validation
+            if (!username || !password || !confirmPassword) {
+                console.log('[DEBUG] Registration validation failed - missing fields');
+                if (errorMessage) {
+                    errorMessage.textContent = 'Please fill in all fields';
+                    errorMessage.classList.add('visible');
+                }
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                console.log('[DEBUG] Registration validation failed - passwords do not match');
+                if (errorMessage) {
+                    errorMessage.textContent = 'Passwords do not match';
+                    errorMessage.classList.add('visible');
+                }
+                return;
+            }
+
+            try {
+                console.log('[DEBUG] Attempting registration with username:', username);
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log('[DEBUG] Registration response status:', response.status);
+                const data = await response.json();
+                console.log('[DEBUG] Registration response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                // Registration successful, now log in automatically
+                console.log('[DEBUG] Registration successful, proceeding with auto-login');
+                authToken = data.token;
+                currentUser = data.user;
+                isAuthenticated = true;
+
+                // Save to localStorage for persistence
+                saveUserToLocalStorage(currentUser, authToken);
+
+                // Update game state with initial user data
+                money = 1000; // Starting amount for new users
+                inventory = {};
+                itemCosts = {};
+
+                // Fade out register form first
+                const registerForm = document.getElementById('splashRegisterForm');
+                if (registerForm) {
+                    registerForm.classList.remove('visible');
+                }
+
+                // Update UI to show logged-in user
+                const gameTitle = document.querySelector('h1');
+                if (gameTitle) {
+                    gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                }
+
+                // Wait for register form fade out before hiding splash screen
+                setTimeout(() => {
+                    const splashScreen = document.getElementById('splashScreen');
+                    if (splashScreen) {
+                        splashScreen.classList.remove('visible');
+                        setTimeout(() => {
+                            splashScreen.style.display = 'none';
+                            initializeGame();
+                        }, 500);
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (errorMessage) {
+                    errorMessage.textContent = error.message || 'Failed to register. Please try again.';
+                    errorMessage.classList.add('visible');
+                }
+            }
+        }
     </script>
 </body>
 </html>
