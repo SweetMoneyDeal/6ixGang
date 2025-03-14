@@ -508,7 +508,7 @@
             width: 100vw;
             height: 100vh;
             background-color: #f0f0f0;
-            display: flex;
+            display: none; /* Changed from flex to none initially */
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
@@ -519,6 +519,7 @@
         }
         
         #splashScreen.visible {
+            display: flex;
             opacity: 1;
         }
         
@@ -1730,14 +1731,18 @@
                 return;
             }
 
-            // Set initial styles before adding visible class
+            // First set display to flex
             splashScreen.style.display = 'flex';
-            splashScreen.style.opacity = '0';
+            console.log('[DEBUG] Set splash screen display to flex');
             
-            // Force a reflow before adding the visible class
+            // Force a reflow
             splashScreen.offsetHeight;
-            splashScreen.classList.add('visible');
-            console.log('[DEBUG] Added visible class to splash screen');
+            
+            // Then set opacity to 1 through the visible class
+            requestAnimationFrame(() => {
+                splashScreen.classList.add('visible');
+                console.log('[DEBUG] Added visible class to splash screen');
+            });
             
             // Check for stored authentication first
             const storedAuth = loadUserFromLocalStorage();
@@ -1776,8 +1781,10 @@
                 }
             }
             
-            // If no valid stored auth, show login form
+            // If no valid stored auth, show login form after splash screen animation
             console.log('[DEBUG] No valid stored auth, preparing to show login form');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for splash screen animation
+            
             const splashLoginForm = document.getElementById('splashLoginForm');
             console.log('[DEBUG] Login form element:', splashLoginForm);
             
@@ -1786,20 +1793,21 @@
                 return;
             }
 
-            // Set initial styles for login form
+            // First set display to block
             splashLoginForm.style.display = 'block';
-            splashLoginForm.style.opacity = '0';
-            console.log('[DEBUG] Set login form initial styles');
+            console.log('[DEBUG] Set login form display to block');
             
             // Force a reflow
             splashLoginForm.offsetHeight;
             
-            // Add visible class to trigger transition
-            splashLoginForm.classList.add('visible');
-            console.log('[DEBUG] Added visible class to login form');
-            console.log('[DEBUG] Current login form style:', {
-                display: splashLoginForm.style.display,
-                opacity: window.getComputedStyle(splashLoginForm).opacity
+            // Then set opacity to 1 through the visible class
+            requestAnimationFrame(() => {
+                splashLoginForm.classList.add('visible');
+                console.log('[DEBUG] Added visible class to login form');
+                console.log('[DEBUG] Current login form style:', {
+                    display: splashLoginForm.style.display,
+                    opacity: window.getComputedStyle(splashLoginForm).opacity
+                });
             });
         };
     </script>
