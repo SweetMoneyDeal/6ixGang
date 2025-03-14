@@ -510,12 +510,12 @@
             background-color: #f0f0f0;
             display: none;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
             z-index: 2000;
             transition: opacity 0.5s ease-in-out;
-            padding: 40px 0;
             opacity: 0;
+            padding: 0;
         }
         
         #splashScreen.visible {
@@ -525,10 +525,10 @@
         
         #splashScreen img {
             max-width: 80%;
-            max-height: 50vh;
+            max-height: 40vh;
             object-fit: contain;
             animation: bounceZoom 1s ease-in-out;
-            margin-top: 40px;
+            margin: 0 0 40px 0;
         }
 
         #splashLoginForm {
@@ -541,7 +541,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 300px;
             text-align: center;
-            margin-top: 40px;
+            margin: 0;
             z-index: 2001;
         }
 
