@@ -512,6 +512,7 @@
         }
 
         #splashLoginForm {
+            display: none;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
@@ -524,6 +525,7 @@
         }
 
         #splashLoginForm.visible {
+            display: block;
             opacity: 1;
         }
 
@@ -589,8 +591,8 @@
         }
 
         #splashRegisterForm.visible {
-            opacity: 1;
             display: block;
+            opacity: 1;
         }
 
         #splashRegisterForm input {
@@ -1183,9 +1185,9 @@
                     }
                 } else {
                     // Original end time (midnight to 1 AM)
-                    if (hours === 0 || (hours === 1 && minutes > 0)) {
+                if (hours === 0 || (hours === 1 && minutes > 0)) {
                         debugLog('Game over condition met (normal end)');
-                        showGameOver();
+                    showGameOver();
                     }
                 }
             }
@@ -1324,7 +1326,7 @@
             // Select Kipling station
             const kiplingButton = document.querySelector('.station-button');
             if (kiplingButton) {
-                kiplingButton.classList.add('selected');
+            kiplingButton.classList.add('selected');
             }
             
             // Update displays
@@ -1583,12 +1585,17 @@
             location.reload();
         }
 
-        // Modify your existing window.onload function
+        // Modify window.onload function
         window.onload = async function() {
             debugLog('Loading splash screen...');
             
             // Clean up any existing resources
             cleanupGameResources();
+            
+            // Show splash screen immediately
+            const splashScreen = document.getElementById('splashScreen');
+            splashScreen.style.display = 'flex';
+            splashScreen.style.opacity = '1';
             
             // Check for stored authentication first
             const storedAuth = loadUserFromLocalStorage();
@@ -1613,7 +1620,6 @@
                     
                     // Wait for splash animation then start game
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    const splashScreen = document.getElementById('splashScreen');
                     splashScreen.style.opacity = '0';
                     setTimeout(() => {
                         splashScreen.style.display = 'none';
@@ -1626,8 +1632,41 @@
             // If no valid stored auth, show login form after 2 seconds
             await new Promise(resolve => setTimeout(resolve, 2000));
             const splashLoginForm = document.getElementById('splashLoginForm');
-            splashLoginForm.classList.add('visible');
+            splashLoginForm.style.display = 'block';
+            // Use setTimeout to trigger the transition
+            setTimeout(() => {
+                splashLoginForm.classList.add('visible');
+            }, 50);
         };
+
+        // Add functions to toggle between login and register forms
+        function showSplashRegisterForm() {
+            const loginForm = document.getElementById('splashLoginForm');
+            const registerForm = document.getElementById('splashRegisterForm');
+            
+            loginForm.classList.remove('visible');
+            setTimeout(() => {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                setTimeout(() => {
+                    registerForm.classList.add('visible');
+                }, 50);
+            }, 500);
+        }
+
+        function showSplashLoginForm() {
+            const loginForm = document.getElementById('splashLoginForm');
+            const registerForm = document.getElementById('splashRegisterForm');
+            
+            registerForm.classList.remove('visible');
+            setTimeout(() => {
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                setTimeout(() => {
+                    loginForm.classList.add('visible');
+                }, 50);
+            }, 500);
+        }
 
         async function handleSplashLogin() {
             const username = document.getElementById('splashUsername').value;
@@ -1696,7 +1735,7 @@
             }
         }
 
-        // Add event listener for Enter key on splash login inputs
+        // Add event listeners for Enter key on splash login inputs
         document.getElementById('splashUsername').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('splashPassword').focus();
