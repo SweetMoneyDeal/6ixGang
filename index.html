@@ -494,13 +494,14 @@
             width: 100%;
             height: 100%;
             background-color: #f0f0f0;
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
             z-index: 2000;
             transition: opacity 0.5s ease-in-out;
             padding: 40px 0;
+            opacity: 0;
         }
         
         #splashScreen img {
@@ -514,7 +515,7 @@
         #splashLoginForm {
             display: none;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: all 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 8px;
@@ -522,11 +523,13 @@
             width: 300px;
             text-align: center;
             margin-bottom: 60px;
+            visibility: hidden;
         }
 
         #splashLoginForm.visible {
             display: block;
             opacity: 1;
+            visibility: visible;
         }
 
         #splashLoginForm input {
@@ -580,7 +583,7 @@
         #splashRegisterForm {
             display: none;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: all 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 8px;
@@ -588,11 +591,13 @@
             width: 300px;
             text-align: center;
             margin-bottom: 60px;
+            visibility: hidden;
         }
 
         #splashRegisterForm.visible {
             display: block;
             opacity: 1;
+            visibility: visible;
         }
 
         #splashRegisterForm input {
@@ -1587,23 +1592,43 @@
 
         // Modify window.onload function
         window.onload = async function() {
+            console.log('[DEBUG] window.onload triggered');
             debugLog('Loading splash screen...');
             
             // Clean up any existing resources
             cleanupGameResources();
+            console.log('[DEBUG] Resources cleaned up');
             
             // Show splash screen immediately
             const splashScreen = document.getElementById('splashScreen');
-            splashScreen.style.display = 'flex';
-            splashScreen.style.opacity = '1';
+            console.log('[DEBUG] Splash screen element:', splashScreen);
+            
+            if (splashScreen) {
+                // First set display to flex
+                splashScreen.style.display = 'flex';
+                console.log('[DEBUG] Set splash screen display to flex');
+                
+                // Force a reflow
+                splashScreen.offsetHeight;
+                
+                // Then set opacity to 1 to trigger transition
+                splashScreen.style.opacity = '1';
+                console.log('[DEBUG] Set splash screen opacity to 1');
+            } else {
+                console.error('[DEBUG] Could not find splash screen element');
+            }
             
             // Check for stored authentication first
             const storedAuth = loadUserFromLocalStorage();
+            console.log('[DEBUG] Loaded stored auth:', storedAuth ? 'Found' : 'Not found');
+            
             if (storedAuth) {
                 debugLog('Found stored authentication, validating...');
                 const isValid = await validateStoredAuth(storedAuth.token);
+                console.log('[DEBUG] Stored auth validation result:', isValid);
                 
                 if (isValid) {
+                    console.log('[DEBUG] Valid stored auth, proceeding with auto-login');
                     debugLog('Stored authentication is valid, auto-signing in');
                     authToken = storedAuth.token;
                     currentUser = storedAuth.userData;
@@ -1616,13 +1641,18 @@
                     
                     // Update UI to show logged-in user
                     const gameTitle = document.querySelector('h1');
-                    gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                    if (gameTitle) {
+                        gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                        console.log('[DEBUG] Updated game title with username');
+                    }
                     
                     // Wait for splash animation then start game
+                    console.log('[DEBUG] Starting splash animation timeout');
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     splashScreen.style.opacity = '0';
                     setTimeout(() => {
                         splashScreen.style.display = 'none';
+                        console.log('[DEBUG] Splash screen hidden, initializing game');
                         initializeGame();
                     }, 500);
                     return;
@@ -1630,41 +1660,100 @@
             }
             
             // If no valid stored auth, show login form after 2 seconds
+            console.log('[DEBUG] No valid stored auth, preparing to show login form');
             await new Promise(resolve => setTimeout(resolve, 2000));
+            
             const splashLoginForm = document.getElementById('splashLoginForm');
-            splashLoginForm.style.display = 'block';
-            // Use setTimeout to trigger the transition
-            setTimeout(() => {
-                splashLoginForm.classList.add('visible');
-            }, 50);
+            console.log('[DEBUG] Login form element:', splashLoginForm);
+            
+            if (splashLoginForm) {
+                // First set display to block
+                splashLoginForm.style.display = 'block';
+                console.log('[DEBUG] Set login form display to block');
+                
+                // Force a reflow
+                splashLoginForm.offsetHeight;
+                
+                // Then set visibility and opacity
+                splashLoginForm.style.visibility = 'visible';
+                
+                // Use setTimeout to trigger the transition
+                setTimeout(() => {
+                    console.log('[DEBUG] Adding visible class to login form');
+                    splashLoginForm.classList.add('visible');
+                    console.log('[DEBUG] Current login form classes:', splashLoginForm.className);
+                    console.log('[DEBUG] Current login form style:', {
+                        display: splashLoginForm.style.display,
+                        opacity: splashLoginForm.style.opacity,
+                        visibility: window.getComputedStyle(splashLoginForm).visibility,
+                        transform: window.getComputedStyle(splashLoginForm).transform
+                    });
+                }, 50);
+            } else {
+                console.error('[DEBUG] Could not find login form element');
+            }
         };
 
         // Add functions to toggle between login and register forms
         function showSplashRegisterForm() {
+            console.log('[DEBUG] Showing register form');
             const loginForm = document.getElementById('splashLoginForm');
             const registerForm = document.getElementById('splashRegisterForm');
             
-            loginForm.classList.remove('visible');
+            console.log('[DEBUG] Form elements:', {
+                loginForm: !!loginForm,
+                registerForm: !!registerForm
+            });
+            
+            if (loginForm) {
+                loginForm.classList.remove('visible');
+                console.log('[DEBUG] Removed visible class from login form');
+            }
+            
             setTimeout(() => {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                setTimeout(() => {
-                    registerForm.classList.add('visible');
-                }, 50);
+                if (loginForm) {
+                    loginForm.style.display = 'none';
+                    console.log('[DEBUG] Set login form display to none');
+                }
+                if (registerForm) {
+                    registerForm.style.display = 'block';
+                    console.log('[DEBUG] Set register form display to block');
+                    setTimeout(() => {
+                        registerForm.classList.add('visible');
+                        console.log('[DEBUG] Added visible class to register form');
+                    }, 50);
+                }
             }, 500);
         }
 
         function showSplashLoginForm() {
+            console.log('[DEBUG] Showing login form');
             const loginForm = document.getElementById('splashLoginForm');
             const registerForm = document.getElementById('splashRegisterForm');
             
-            registerForm.classList.remove('visible');
+            console.log('[DEBUG] Form elements:', {
+                loginForm: !!loginForm,
+                registerForm: !!registerForm
+            });
+            
+            if (registerForm) {
+                registerForm.classList.remove('visible');
+                console.log('[DEBUG] Removed visible class from register form');
+            }
+            
             setTimeout(() => {
-                registerForm.style.display = 'none';
-                loginForm.style.display = 'block';
-                setTimeout(() => {
-                    loginForm.classList.add('visible');
-                }, 50);
+                if (registerForm) {
+                    registerForm.style.display = 'none';
+                    console.log('[DEBUG] Set register form display to none');
+                }
+                if (loginForm) {
+                    loginForm.style.display = 'block';
+                    console.log('[DEBUG] Set login form display to block');
+                    setTimeout(() => {
+                        loginForm.classList.add('visible');
+                        console.log('[DEBUG] Added visible class to login form');
+                    }, 50);
+                }
             }, 500);
         }
 
