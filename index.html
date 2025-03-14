@@ -19,6 +19,10 @@
         }
         .container {
             text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none; /* Hide initially */
         }
         .station-button {
             padding: 15px 30px;
@@ -1598,6 +1602,13 @@
             console.log('[DEBUG] window.onload triggered');
             debugLog('Loading splash screen...');
             
+            // Hide main container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'none';
+                console.log('[DEBUG] Main container hidden');
+            }
+            
             // Clean up any existing resources
             cleanupGameResources();
             console.log('[DEBUG] Resources cleaned up');
@@ -1833,6 +1844,13 @@
         function initializeGame() {
             debugLog('Initializing game...', currentUser);
             
+            // Show the main container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'block';
+                console.log('[DEBUG] Main container displayed');
+            }
+            
             // Clean up any existing resources
             cleanupGameResources();
             
@@ -1856,8 +1874,20 @@
             const modalsContainer = document.querySelector('.container');
             eventManager.addEventListener(modalsContainer, 'click', handleModalClick);
 
-            // Rest of initialization code...
-            // ... existing code ...
+            // Initialize time display
+            updateTimeDisplay();
+            
+            // Select Kipling station by default
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                kiplingButton.classList.add('selected');
+                updateMenu('Kipling');
+            }
+            
+            // Update inventory display
+            updateInventoryDisplay();
+            
+            console.log('[DEBUG] Game initialization complete');
         }
 
         // Memory management
