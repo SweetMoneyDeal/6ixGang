@@ -533,7 +533,7 @@
         #splashLoginForm {
             display: none;
             opacity: 0;
-            transition: all 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 8px;
@@ -541,11 +541,13 @@
             width: 300px;
             text-align: center;
             margin-top: 40px;
+            pointer-events: none;
         }
 
         #splashLoginForm.visible {
             display: block;
             opacity: 1;
+            pointer-events: auto;
         }
 
         #splashLoginForm input {
@@ -589,11 +591,18 @@
             background-color: #1976D2;
         }
 
-        #splashLoginForm .error-message {
+        .error-message {
             color: #f44336;
             font-size: 14px;
             margin-top: 10px;
             display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .error-message.visible {
+            display: block;
+            opacity: 1;
         }
 
         #splashRegisterForm {
@@ -1437,386 +1446,41 @@
             }
         }
 
-        async function handleLogin() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-
-            if (!username || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            try {
-                debugLog('Attempting login with username:', username);
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                debugLog('Login response status:', response.status);
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Received non-JSON response from server');
-                }
-
-                const data = await response.json();
-                debugLog('Login response:', data);
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Login failed');
-                }
-
-                // Store auth token and user data
-                authToken = data.token;
-                currentUser = data.user;
-                isAuthenticated = true;
-
-                // Save to localStorage for persistence
-                saveUserToLocalStorage(currentUser, authToken);
-
-                // Update game state with user data
-                money = currentUser.money;
-                inventory = currentUser.inventory || {};
-                itemCosts = currentUser.itemCosts || {};
-
-                document.getElementById('authModal').style.display = 'none';
-                
-                // Update UI to show logged-in user
-                const gameTitle = document.querySelector('h1');
-                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
-                
-                // Scroll to top before showing game
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                console.log('[DEBUG] Scrolled window to top');
-                
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    initializeGame();
-                }, 500);
-            } catch (error) {
-                console.error('Login error:', error);
-                alert(error.message || 'Failed to login. Please try again.');
-            }
-        }
-
-        async function handleRegister() {
-            const username = document.getElementById('registerUsername').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPass = document.getElementById('confirmPassword').value;
-
-            // Clear any existing warning messages
-            const existingWarning = document.getElementById('registerWarning');
-            if (existingWarning) {
-                existingWarning.remove();
-            }
-
-            // Create warning message element
-            const warningDiv = document.createElement('div');
-            warningDiv.id = 'registerWarning';
-            warningDiv.style.color = '#f44336';
-            warningDiv.style.marginTop = '10px';
-            warningDiv.style.fontSize = '14px';
-            
-            let warnings = [];
-
-            if (username.length < 3) {
-                warnings.push('Username must be at least 3 characters long');
-            }
-            
-            if (password.length < 6) {
-                warnings.push('Password must be at least 6 characters long');
-            }
-
-            if (warnings.length > 0) {
-                warningDiv.innerHTML = warnings.join('<br>');
-                document.getElementById('registerForm').insertBefore(warningDiv, document.querySelector('#registerForm .modal-buttons'));
-                return;
-            }
-
-            if (!username || !password || !confirmPass) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            if (password !== confirmPass) {
-                alert('Passwords do not match');
-                return;
-            }
-
-            try {
-                debugLog('Attempting registration with username:', username);
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                debugLog('Register response status:', response.status);
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Received non-JSON response from server');
-                }
-
-                const data = await response.json();
-                debugLog('Register response:', data);
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Registration failed');
-                }
-
-                // Store auth token and user data
-                authToken = data.token;
-                currentUser = data.user;
-                isAuthenticated = true;
-
-                // Save to localStorage for persistence
-                saveUserToLocalStorage(currentUser, authToken);
-
-                // Initialize game state with default values
-                money = currentUser.money || 1000;
-                inventory = currentUser.inventory || {};
-                itemCosts = currentUser.itemCosts || {};
-
-                document.getElementById('authModal').style.display = 'none';
-                
-                // Update UI to show logged-in user
-                const gameTitle = document.querySelector('h1');
-                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
-                
-                // Scroll to top before showing game
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                console.log('[DEBUG] Scrolled window to top');
-                
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    initializeGame();
-                }, 500);
-            } catch (error) {
-                console.error('Registration error:', error);
-                alert(error.message || 'Failed to register. Please try again.');
-            }
-        }
-
-        // Add logout function
-        async function handleLogout() {
-            debugLog('Logging out user');
-            clearStoredUser();
-            isAuthenticated = false;
-            currentUser = null;
-            authToken = null;
-            
-            // Clean up resources before reload
-            cleanupGameResources();
-            
-            location.reload();
-        }
-
-        // Update window.onload function
-        window.onload = async function() {
-            console.log('[DEBUG] window.onload triggered');
-            debugLog('Loading splash screen...');
-            
-            // Hide main container
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.display = 'none';
-                console.log('[DEBUG] Main container hidden');
-            }
-            
-            // Clean up any existing resources
-            cleanupGameResources();
-            console.log('[DEBUG] Resources cleaned up');
-            
-            // Show splash screen immediately
-            const splashScreen = document.getElementById('splashScreen');
-            console.log('[DEBUG] Splash screen element:', splashScreen);
-            
-            if (!splashScreen) {
-                console.error('[DEBUG] Could not find splash screen element');
-                return;
-            }
-
-            // Force a reflow before adding the visible class
-            splashScreen.offsetHeight;
-            splashScreen.classList.add('visible');
-            console.log('[DEBUG] Added visible class to splash screen');
-            
-            // Check for stored authentication first
-            const storedAuth = loadUserFromLocalStorage();
-            console.log('[DEBUG] Loaded stored auth:', storedAuth ? 'Found' : 'Not found');
-            
-            if (storedAuth) {
-                debugLog('Found stored authentication, validating...');
-                const isValid = await validateStoredAuth(storedAuth.token);
-                console.log('[DEBUG] Stored auth validation result:', isValid);
-                
-                if (isValid) {
-                    console.log('[DEBUG] Valid stored auth, proceeding with auto-login');
-                    debugLog('Stored authentication is valid, auto-signing in');
-                    authToken = storedAuth.token;
-                    currentUser = storedAuth.userData;
-                    isAuthenticated = true;
-                    
-                    // Update game state with user data
-                    money = currentUser.money;
-                    inventory = currentUser.inventory || {};
-                    itemCosts = currentUser.itemCosts || {};
-                    
-                    // Update UI to show logged-in user
-                    const gameTitle = document.querySelector('h1');
-                    if (gameTitle) {
-                        gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
-                        console.log('[DEBUG] Updated game title with username');
-                    }
-                    
-                    // Wait for splash animation then start game
-                    console.log('[DEBUG] Starting splash animation timeout');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    splashScreen.classList.remove('visible');
-                    
-                    // Wait for fade out animation to complete
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    console.log('[DEBUG] Splash screen hidden, initializing game');
-                    initializeGame();
-                    return;
-                }
-            }
-            
-            // If no valid stored auth, show login form after 2 seconds
-            console.log('[DEBUG] No valid stored auth, preparing to show login form');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const splashLoginForm = document.getElementById('splashLoginForm');
-            console.log('[DEBUG] Login form element:', splashLoginForm);
-            
-            if (!splashLoginForm) {
-                console.error('[DEBUG] Could not find login form element');
-                return;
-            }
-
-            // Show login form with transition
-            splashLoginForm.style.display = 'block';
-            console.log('[DEBUG] Set login form display to block');
-            
-            // Force a reflow
-            splashLoginForm.offsetHeight;
-            
-            // Add visible class to trigger transition
-            splashLoginForm.classList.add('visible');
-            console.log('[DEBUG] Added visible class to login form');
-            console.log('[DEBUG] Current login form style:', {
-                display: splashLoginForm.style.display,
-                opacity: window.getComputedStyle(splashLoginForm).opacity,
-                transform: window.getComputedStyle(splashLoginForm).transform
-            });
-        };
-
-        // Add functions to toggle between login and register forms
-        function showSplashRegisterForm() {
-            console.log('[DEBUG] Showing register form');
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
-            
-            console.log('[DEBUG] Form elements:', {
-                loginForm: !!loginForm,
-                registerForm: !!registerForm
-            });
-            
-            if (loginForm) {
-                loginForm.classList.remove('visible');
-                console.log('[DEBUG] Removed visible class from login form');
-            }
-            
-            setTimeout(() => {
-                if (loginForm) {
-                    loginForm.style.display = 'none';
-                    console.log('[DEBUG] Set login form display to none');
-                }
-                if (registerForm) {
-                    registerForm.style.display = 'block';
-                    console.log('[DEBUG] Set register form display to block');
-                    setTimeout(() => {
-                        registerForm.classList.add('visible');
-                        console.log('[DEBUG] Added visible class to register form');
-                    }, 50);
-                }
-            }, 500);
-        }
-
-        function showSplashLoginForm() {
-            console.log('[DEBUG] Showing login form');
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
-            
-            console.log('[DEBUG] Form elements:', {
-                loginForm: !!loginForm,
-                registerForm: !!registerForm
-            });
-            
-            if (registerForm) {
-                registerForm.classList.remove('visible');
-                console.log('[DEBUG] Removed visible class from register form');
-            }
-            
-            setTimeout(() => {
-                if (registerForm) {
-                    registerForm.style.display = 'none';
-                    console.log('[DEBUG] Set register form display to none');
-                }
-                if (loginForm) {
-                    loginForm.style.display = 'block';
-                    console.log('[DEBUG] Set login form display to block');
-                    setTimeout(() => {
-                        loginForm.classList.add('visible');
-                        console.log('[DEBUG] Added visible class to login form');
-                    }, 50);
-                }
-            }, 500);
-        }
-
         async function handleSplashLogin() {
+            console.log('[DEBUG] Starting login process');
             const username = document.getElementById('splashUsername').value;
             const password = document.getElementById('splashPassword').value;
-            const errorMessage = document.querySelector('#splashLoginForm .error-message');
+            const errorMessage = document.getElementById('splashLoginError');
 
+            // Clear any existing error messages
+            if (errorMessage) {
+                errorMessage.classList.remove('visible');
+                errorMessage.textContent = '';
+            }
+
+            // Basic validation
             if (!username || !password) {
-                errorMessage.textContent = 'Please fill in all fields';
-                errorMessage.style.display = 'block';
+                console.log('[DEBUG] Login validation failed - missing credentials');
+                if (errorMessage) {
+                    errorMessage.textContent = 'Please enter both username and password';
+                    errorMessage.classList.add('visible');
+                }
                 return;
             }
 
             try {
-                debugLog('Attempting login with username:', username);
+                console.log('[DEBUG] Attempting login with username:', username);
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ username, password })
                 });
 
-                debugLog('Login response status:', response.status);
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Received non-JSON response from server');
-                }
-
+                console.log('[DEBUG] Login response status:', response.status);
                 const data = await response.json();
-                debugLog('Login response:', data);
+                console.log('[DEBUG] Login response:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Login failed');
@@ -1835,29 +1499,43 @@
                 inventory = currentUser.inventory || {};
                 itemCosts = currentUser.itemCosts || {};
 
-                // Fade out splash screen
-                const splashScreen = document.getElementById('splashScreen');
-                splashScreen.style.opacity = '0';
-                
-                // Update UI to show logged-in user and start game
+                // Fade out login form first
+                const loginForm = document.getElementById('splashLoginForm');
+                if (loginForm) {
+                    loginForm.classList.remove('visible');
+                }
+
+                // Update UI to show logged-in user
                 const gameTitle = document.querySelector('h1');
-                gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
-                
+                if (gameTitle) {
+                    gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                }
+
                 // Scroll to top before showing game
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
                 console.log('[DEBUG] Scrolled window to top');
-                
+
+                // Wait for login form fade out before hiding splash screen
                 setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    initializeGame();
+                    const splashScreen = document.getElementById('splashScreen');
+                    if (splashScreen) {
+                        splashScreen.classList.remove('visible');
+                        setTimeout(() => {
+                            splashScreen.style.display = 'none';
+                            initializeGame();
+                        }, 500);
+                    }
                 }, 500);
+
             } catch (error) {
                 console.error('Login error:', error);
-                errorMessage.textContent = error.message || 'Failed to login. Please try again.';
-                errorMessage.style.display = 'block';
+                if (errorMessage) {
+                    errorMessage.textContent = error.message || 'Failed to login. Please try again.';
+                    errorMessage.classList.add('visible');
+                }
             }
         }
 
@@ -2026,6 +1704,104 @@
                 handleSplashRegister();
             }
         });
+
+        // Update window.onload function
+        window.onload = async function() {
+            console.log('[DEBUG] window.onload triggered');
+            console.log('[DEBUG] Loading splash screen...');
+            
+            // Hide main container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'none';
+                console.log('[DEBUG] Main container hidden');
+            }
+            
+            // Clean up any existing resources
+            cleanupGameResources();
+            console.log('[DEBUG] Resources cleaned up');
+            
+            // Show splash screen immediately
+            const splashScreen = document.getElementById('splashScreen');
+            console.log('[DEBUG] Splash screen element:', splashScreen);
+            
+            if (!splashScreen) {
+                console.error('[DEBUG] Could not find splash screen element');
+                return;
+            }
+
+            // Set initial styles before adding visible class
+            splashScreen.style.display = 'flex';
+            splashScreen.style.opacity = '0';
+            
+            // Force a reflow before adding the visible class
+            splashScreen.offsetHeight;
+            splashScreen.classList.add('visible');
+            console.log('[DEBUG] Added visible class to splash screen');
+            
+            // Check for stored authentication first
+            const storedAuth = loadUserFromLocalStorage();
+            console.log('[DEBUG] Loaded stored auth:', storedAuth ? 'Found' : 'Not found');
+            
+            if (storedAuth) {
+                console.log('[DEBUG] Found stored authentication, validating...');
+                const isValid = await validateStoredAuth(storedAuth.token);
+                
+                if (isValid) {
+                    console.log('[DEBUG] Valid stored auth, proceeding with auto-login');
+                    authToken = storedAuth.token;
+                    currentUser = storedAuth.userData;
+                    isAuthenticated = true;
+                    
+                    // Update game state with user data
+                    money = currentUser.money;
+                    inventory = currentUser.inventory || {};
+                    itemCosts = currentUser.itemCosts || {};
+                    
+                    // Update UI to show logged-in user
+                    const gameTitle = document.querySelector('h1');
+                    if (gameTitle) {
+                        gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
+                    }
+                    
+                    // Wait for splash animation then start game
+                    setTimeout(() => {
+                        splashScreen.classList.remove('visible');
+                        setTimeout(() => {
+                            splashScreen.style.display = 'none';
+                            initializeGame();
+                        }, 500);
+                    }, 1000);
+                    return;
+                }
+            }
+            
+            // If no valid stored auth, show login form
+            console.log('[DEBUG] No valid stored auth, preparing to show login form');
+            const splashLoginForm = document.getElementById('splashLoginForm');
+            console.log('[DEBUG] Login form element:', splashLoginForm);
+            
+            if (!splashLoginForm) {
+                console.error('[DEBUG] Could not find login form element');
+                return;
+            }
+
+            // Set initial styles for login form
+            splashLoginForm.style.display = 'block';
+            splashLoginForm.style.opacity = '0';
+            console.log('[DEBUG] Set login form initial styles');
+            
+            // Force a reflow
+            splashLoginForm.offsetHeight;
+            
+            // Add visible class to trigger transition
+            splashLoginForm.classList.add('visible');
+            console.log('[DEBUG] Added visible class to login form');
+            console.log('[DEBUG] Current login form style:', {
+                display: splashLoginForm.style.display,
+                opacity: window.getComputedStyle(splashLoginForm).opacity
+            });
+        };
     </script>
 </body>
 </html>
