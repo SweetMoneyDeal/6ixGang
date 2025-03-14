@@ -21,7 +21,7 @@
             text-align: center;
             max-width: 800px;
             margin: 0 auto;
-            padding: 0;
+            padding: 20px;
             display: none; /* Hide initially */
         }
         .station-button {
@@ -1481,9 +1481,39 @@
             }
         }
 
-        // Replace the old saveUserToLocalStorage function
         function saveUserToLocalStorage(userData, token) {
             saveGameState(); // This will handle both MongoDB and localStorage
+        }
+
+        function loadUserFromLocalStorage() {
+            console.log('[DEBUG] Loading user data from localStorage');
+            try {
+                const gameStateStr = localStorage.getItem('gameState');
+                if (gameStateStr) {
+                    const gameState = JSON.parse(gameStateStr);
+                    console.log('[DEBUG] Found stored game state:', gameState);
+                    
+                    // Restore the currentTime from ISO string if it exists
+                    if (gameState.gameData && gameState.gameData.currentTime) {
+                        gameState.gameData.currentTime = new Date(gameState.gameData.currentTime);
+                    }
+                    
+                    return {
+                        token: gameState.token,
+                        userData: gameState.userData,
+                        gameData: gameState.gameData
+                    };
+                }
+            } catch (error) {
+                console.error('[DEBUG] Error parsing stored game state:', error);
+                localStorage.removeItem('gameState');
+            }
+            return null;
+        }
+
+        function clearStoredUser() {
+            console.log('[DEBUG] Clearing stored user data');
+            localStorage.removeItem('gameState');
         }
 
         // Update window.onload to load from MongoDB first
