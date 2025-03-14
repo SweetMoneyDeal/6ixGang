@@ -1565,6 +1565,35 @@
             localStorage.removeItem('gameState');
         }
 
+        function initializeGame() {
+            console.log('Initializing game...');
+            
+            // Initialize station prices
+            stationOrder.forEach(station => {
+                stationPrices[station] = generateStationPrices();
+                console.log(`Generated prices for ${station}:`, stationPrices[station]);
+            });
+            
+            // Show the game container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'block';
+            }
+            
+            // Select Kipling station by default
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                kiplingButton.classList.add('selected');
+            }
+            
+            // Initialize displays
+            updateTimeDisplay();
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            
+            console.log('Game initialized successfully');
+        }
+
         // Update window.onload to load from MongoDB first
         window.onload = async function() {
             console.log('[DEBUG] Window loaded, initializing game...');
