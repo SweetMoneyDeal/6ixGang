@@ -1048,10 +1048,10 @@
             updateInventoryDisplay();
             updateMenu(lastVisitedStation);
 
-            // Auto-save after successful purchase
+            // Save state after successful purchase
             if (isAuthenticated && currentUser) {
                 console.log('[DEBUG] Auto-saving after purchase...');
-                saveUserToLocalStorage(currentUser, authToken);
+                saveGameState();
             }
         }
 
@@ -1100,10 +1100,10 @@
             updateInventoryDisplay();
             updateMenu(lastVisitedStation);
 
-            // Auto-save after successful sale
+            // Save state after successful sale
             if (isAuthenticated && currentUser) {
                 console.log('[DEBUG] Auto-saving after sale...');
-                saveUserToLocalStorage(currentUser, authToken);
+                saveGameState();
             }
         }
 
@@ -1183,10 +1183,10 @@
             updateMenu(station);
             updateInventoryDisplay();
 
-            // Auto-save after changing stations
+            // Save state after changing stations
             if (isAuthenticated && currentUser) {
                 console.log('[DEBUG] Auto-saving after station change...');
-                saveUserToLocalStorage(currentUser, authToken);
+                saveGameState();
             }
         }
 
@@ -1408,403 +1408,85 @@
             document.getElementById('registerForm').style.display = 'block';
         }
 
-        function saveUserToLocalStorage(userData, token) {
-            console.log('[DEBUG] Saving game state to localStorage');
+        async function saveGameState() {
+            console.log('[DEBUG] Saving game state to MongoDB and localStorage');
             try {
+                // Prepare the game state object
                 const gameState = {
-                    token: token,
-                    userData: userData,
-                    gameData: {
-                        money: money,
-                        inventory: inventory,
-                        itemCosts: itemCosts,
-                        lastVisitedStation: lastVisitedStation,
-                        currentTime: currentTime.toISOString()
-                    }
+                    money: money,
+                    inventory: inventory,
+                    itemCosts: itemCosts,
+                    lastVisitedStation: lastVisitedStation,
+                    currentTime: currentTime.toISOString()
                 };
-                console.log('[DEBUG] Preparing to save game state:', gameState);
-                localStorage.setItem('gameState', JSON.stringify(gameState));
-                console.log('[DEBUG] Game state saved successfully');
+
+                // Save to MongoDB
+                if (isAuthenticated && authToken) {
+                    const response = await fetch('/api/save-game-state', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify(gameState)
+                    });
+
+                    if (!response.ok) {
+                        console.error('[DEBUG] Failed to save game state to MongoDB:', await response.text());
+                    } else {
+                        console.log('[DEBUG] Game state saved to MongoDB successfully');
+                    }
+                }
+
+                // Save to localStorage
+                const localStorageState = {
+                    token: authToken,
+                    userData: currentUser,
+                    gameData: gameState
+                };
+                localStorage.setItem('gameState', JSON.stringify(localStorageState));
+                console.log('[DEBUG] Game state saved to localStorage successfully');
             } catch (error) {
                 console.error('[DEBUG] Error saving game state:', error);
             }
         }
 
-        function loadUserFromLocalStorage() {
-            debugLog('Loading user data from localStorage');
+        async function loadGameStateFromServer() {
+            console.log('[DEBUG] Loading game state from server');
             try {
-                const gameStateStr = localStorage.getItem('gameState');
-                if (gameStateStr) {
-                    const gameState = JSON.parse(gameStateStr);
-                    console.log('[DEBUG] Found stored game state:', gameState);
-                    
-                    // Restore the currentTime from ISO string
-                    if (gameState.gameData && gameState.gameData.currentTime) {
-                        gameState.gameData.currentTime = new Date(gameState.gameData.currentTime);
-                    }
-                    
-                    return gameState;
+                if (!isAuthenticated || !authToken) {
+                    console.log('[DEBUG] Not authenticated, skipping server load');
+                    return null;
                 }
-            } catch (error) {
-                debugError('Error parsing stored game state:', error);
-                localStorage.removeItem('gameState');
-            }
-            return null;
-        }
 
-        function clearStoredUser() {
-            debugLog('Clearing stored user data');
-            localStorage.removeItem('gameState');
-        }
-
-        async function validateStoredAuth(token) {
-            debugLog('Validating stored auth token');
-            try {
-                const response = await fetch('/api/validate-token', {
+                const response = await fetch('/api/load-game-state', {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${authToken}`,
                         'Accept': 'application/json'
                     }
                 });
 
                 if (!response.ok) {
-                    debugLog('Stored token is invalid');
-                    clearStoredUser();
-                    return false;
+                    console.error('[DEBUG] Failed to load game state from server:', await response.text());
+                    return null;
                 }
 
-                debugLog('Stored token is valid');
-                return true;
+                const serverState = await response.json();
+                console.log('[DEBUG] Loaded game state from server:', serverState);
+                return serverState;
             } catch (error) {
-                debugError('Error validating token:', error);
-                clearStoredUser();
-                return false;
+                console.error('[DEBUG] Error loading game state from server:', error);
+                return null;
             }
         }
 
-        async function handleSplashLogin() {
-            console.log('[DEBUG] Starting login process');
-            const username = document.getElementById('splashUsername').value;
-            const password = document.getElementById('splashPassword').value;
-            const errorMessage = document.getElementById('splashLoginError');
-
-            // Clear any existing error messages
-            if (errorMessage) {
-                errorMessage.classList.remove('visible');
-                errorMessage.textContent = '';
-            }
-
-            // Basic validation
-            if (!username || !password) {
-                console.log('[DEBUG] Login validation failed - missing credentials');
-                if (errorMessage) {
-                    errorMessage.textContent = 'Please enter both username and password';
-                    errorMessage.classList.add('visible');
-                }
-                return;
-            }
-
-            try {
-                console.log('[DEBUG] Attempting login with username:', username);
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                console.log('[DEBUG] Login response status:', response.status);
-                const data = await response.json();
-                console.log('[DEBUG] Login response:', data);
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Login failed');
-                }
-
-                // Store auth token and user data
-                authToken = data.token;
-                currentUser = data.user;
-                isAuthenticated = true;
-
-                // Update game state with user data
-                money = currentUser.money || 1000;
-                inventory = currentUser.inventory || {};
-                itemCosts = currentUser.itemCosts || {};
-
-                // Save complete game state to localStorage
-                saveUserToLocalStorage(currentUser, authToken);
-
-                // Fade out login form first
-                const loginForm = document.getElementById('splashLoginForm');
-                if (loginForm) {
-                    loginForm.classList.remove('visible');
-                }
-
-                // Update UI to show logged-in user
-                const gameTitle = document.querySelector('h1');
-                if (gameTitle) {
-                    gameTitle.innerHTML = `6ixGang - Welcome, ${currentUser.username}!`;
-                }
-
-                // Scroll to top before showing game
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                console.log('[DEBUG] Scrolled window to top');
-
-                // Wait for login form fade out before hiding splash screen
-                setTimeout(() => {
-                    const splashScreen = document.getElementById('splashScreen');
-                    if (splashScreen) {
-                        splashScreen.classList.remove('visible');
-                        setTimeout(() => {
-                            splashScreen.style.display = 'none';
-                            initializeGame();
-                        }, 500);
-                    }
-                }, 500);
-
-            } catch (error) {
-                console.error('Login error:', error);
-                if (errorMessage) {
-                    errorMessage.textContent = error.message || 'Failed to login. Please try again.';
-                    errorMessage.classList.add('visible');
-                }
-            }
+        // Replace the old saveUserToLocalStorage function
+        function saveUserToLocalStorage(userData, token) {
+            saveGameState(); // This will handle both MongoDB and localStorage
         }
 
-        // Add event listeners for Enter key on splash login inputs
-        document.getElementById('splashUsername').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('splashPassword').focus();
-            }
-        });
-
-        document.getElementById('splashPassword').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                handleSplashLogin();
-            }
-        });
-
-        // Add this new function to initialize the game
-        function initializeGame() {
-            debugLog('Initializing game...', currentUser);
-            
-            // Show the main container
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.display = 'block';
-                console.log('[DEBUG] Main container displayed');
-            }
-            
-            // Scroll to top of window
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-            console.log('[DEBUG] Scrolled window to top');
-            
-            // Clean up any existing resources
-            cleanupGameResources();
-            
-            // Generate today's prices and stock levels
-            const todaySeed = getTodaySeed();
-            debugLog('Today\'s seed:', todaySeed);
-            seededRandom.seed = todaySeed;
-            
-            stationPrices = {
-                'Kipling': generateStationPrices(),
-                'Spadina': generateStationPrices(),
-                'Yonge': generateStationPrices(),
-                'Main': generateStationPrices(),
-                'Kennedy': generateStationPrices()
-            };
-            
-            // Set up event delegation
-            const buttonsContainer = document.getElementById('buttons');
-            eventManager.addEventListener(buttonsContainer, 'click', handleStationClick);
-
-            const modalsContainer = document.querySelector('.container');
-            eventManager.addEventListener(modalsContainer, 'click', handleModalClick);
-
-            // Initialize time display
-            updateTimeDisplay();
-            
-            // Select Kipling station by default
-            const kiplingButton = document.querySelector('.station-button');
-            if (kiplingButton) {
-                kiplingButton.classList.add('selected');
-                updateMenu('Kipling');
-            }
-            
-            // Update inventory display
-            updateInventoryDisplay();
-
-            // Start auto-save interval
-            startAutoSave();
-            
-            console.log('[DEBUG] Game initialization complete');
-        }
-
-        // Add auto-save functionality
-        function startAutoSave() {
-            // Only set up visibility change listener
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden' && isAuthenticated && currentUser) {
-                    console.log('[DEBUG] Saving game state before page hide...');
-                    saveUserToLocalStorage(currentUser, authToken);
-                }
-            });
-        }
-
-        // Update cleanupGameResources to remove interval cleanup
-        function cleanupGameResources() {
-            // Clear game state
-            selectedStations = [];
-            inventory = {};
-            money = 1000;
-            highScores = [];
-            currentStation = null;
-            lastVisitedStation = 'Kipling';
-            itemCosts = {};
-            itemBuyStations = {};
-            currentSellItem = null;
-            currentSellPrice = 0;
-            currentTime = new Date();
-            currentTime.setHours(22, 0, 0);
-
-            // Clear event listeners and cached elements
-            eventManager.cleanup();
-
-            // Clear any intervals
-            if (window.gameInterval) {
-                clearInterval(window.gameInterval);
-                window.gameInterval = null;
-            }
-
-            // Clear any timeouts
-            if (window.gameTimeouts) {
-                window.gameTimeouts.forEach(timeout => clearTimeout(timeout));
-                window.gameTimeouts = [];
-            }
-        }
-
-        // Event delegation for station buttons
-        function handleStationClick(event) {
-            const button = event.target;
-            if (!button.classList.contains('station-button')) return;
-            
-            const station = button.textContent;
-            debugLog('Station clicked:', {
-                station,
-                previousStation: lastVisitedStation
-            });
-            
-            // Calculate minutes before updating lastVisitedStation
-            const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
-            debugLog('Minutes to add:', minutesToAdd);
-            
-            if (minutesToAdd > 0) {
-                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
-                debugLog('New time:', currentTime);
-                updateTimeDisplay();
-            }
-            
-            // Update station after time calculation
-            lastVisitedStation = station;
-            
-            document.querySelectorAll('.station-button').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            button.classList.add('selected');
-            
-            updateMenu(station);
-            updateInventoryDisplay();
-
-            // Auto-save after changing stations
-            if (isAuthenticated && currentUser) {
-                console.log('[DEBUG] Auto-saving after station change...');
-                saveUserToLocalStorage(currentUser, authToken);
-            }
-        }
-
-        // Event delegation for modal clicks
-        function handleModalClick(event) {
-            const modal = event.target;
-            if (!modal.classList.contains('modal')) return;
-
-            if (modal.id === 'gameOverModal') {
-                restartGame();
-            } else if (modal.id === 'viewHighScoresModal') {
-                closeHighScoresModal();
-            }
-        }
-
-        function showSplashRegisterForm() {
-            console.log('[DEBUG] Showing splash register form');
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
-            
-            if (loginForm && registerForm) {
-                // First hide login form
-                loginForm.classList.remove('visible');
-                setTimeout(() => {
-                    loginForm.style.display = 'none';
-                    
-                    // Then show register form
-                    registerForm.style.display = 'block';
-                    registerForm.offsetHeight; // Force reflow
-                    requestAnimationFrame(() => {
-                        registerForm.classList.add('visible');
-                    });
-                }, 500);
-            }
-        }
-
-        function showSplashLoginForm() {
-            console.log('[DEBUG] Showing splash login form');
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
-            
-            if (loginForm && registerForm) {
-                // First hide register form
-                registerForm.classList.remove('visible');
-                setTimeout(() => {
-                    registerForm.style.display = 'none';
-                    
-                    // Then show login form
-                    loginForm.style.display = 'block';
-                    loginForm.offsetHeight; // Force reflow
-                    requestAnimationFrame(() => {
-                        loginForm.classList.add('visible');
-                    });
-                }, 500);
-            }
-        }
-
-        // Add event listeners for Enter key on splash register inputs
-        document.getElementById('splashRegisterUsername').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('splashRegisterPassword').focus();
-            }
-        });
-
-        document.getElementById('splashRegisterPassword').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('splashConfirmPassword').focus();
-            }
-        });
-
-        document.getElementById('splashConfirmPassword').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                handleSplashRegister();
-            }
-        });
-
-        // Update window.onload function
+        // Update window.onload to load from MongoDB first
         window.onload = async function() {
             console.log('[DEBUG] Window loaded, initializing game...');
             
@@ -1838,8 +1520,21 @@
                     currentUser = storedAuth.userData;
                     isAuthenticated = true;
                     
-                    // Update game state with stored data
-                    if (storedAuth.gameData) {
+                    // Try to load game state from MongoDB first
+                    const serverState = await loadGameStateFromServer();
+                    
+                    if (serverState) {
+                        // Use server state as it's more up-to-date
+                        money = serverState.money;
+                        inventory = serverState.inventory || {};
+                        itemCosts = serverState.itemCosts || {};
+                        lastVisitedStation = serverState.lastVisitedStation || 'Kipling';
+                        if (serverState.currentTime) {
+                            currentTime = new Date(serverState.currentTime);
+                        }
+                        console.log('[DEBUG] Loaded game state from server');
+                    } else if (storedAuth.gameData) {
+                        // Fall back to localStorage if server state not available
                         money = storedAuth.gameData.money;
                         inventory = storedAuth.gameData.inventory || {};
                         itemCosts = storedAuth.gameData.itemCosts || {};
@@ -1847,6 +1542,7 @@
                         if (storedAuth.gameData.currentTime) {
                             currentTime = new Date(storedAuth.gameData.currentTime);
                         }
+                        console.log('[DEBUG] Loaded game state from localStorage');
                     }
                     
                     // Update UI to show logged-in user
