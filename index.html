@@ -525,10 +525,10 @@
         
         #splashScreen img {
             max-width: 80%;
-            max-height: 40vh;
+            max-height: 45vh;
             object-fit: contain;
             animation: bounceZoom 1s ease-in-out;
-            margin: 0 0 40px 0;
+            margin-bottom: 60px; /* Increased spacing between logo and form */
         }
 
         #splashLoginForm {
@@ -536,13 +536,14 @@
             opacity: 0;
             transition: all 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+            padding: 30px; /* Increased padding */
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 320px; /* Slightly wider */
             text-align: center;
-            margin: 0;
             z-index: 2001;
+            position: relative; /* Added for better positioning */
+            transform: translateY(-20px); /* Slight upward adjustment */
         }
 
         #splashLoginForm.visible {
@@ -611,12 +612,14 @@
             opacity: 0;
             transition: all 0.5s ease-in-out;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+            padding: 30px; /* Increased padding */
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 320px; /* Slightly wider */
             text-align: center;
-            margin-bottom: 60px;
+            z-index: 2001;
+            position: relative; /* Added for better positioning */
+            transform: translateY(-20px); /* Slight upward adjustment */
             visibility: hidden;
         }
 
