@@ -14,6 +14,8 @@
             min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            position: relative;
+            overflow-x: hidden;
         }
         .container {
             text-align: center;
@@ -402,20 +404,19 @@
             overflow-x: auto;
             overflow-y: hidden;
             width: 100%;
-            -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
-            scrollbar-width: none; /* Hide scrollbar for Firefox */
-            -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
             white-space: nowrap;
             padding: 10px 0;
             scroll-snap-type: x mandatory;
         }
-        /* Hide scrollbar for Chrome/Safari */
         #buttons::-webkit-scrollbar {
             display: none;
         }
         #buttons::after {
             content: '';
-            padding-right: 1px; /* Ensures last button can be centered */
+            padding-right: 1px;
         }
         .top-score {
             text-align: center;
@@ -491,28 +492,26 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background-color: #f0f0f0;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             z-index: 2000;
-            transition: all 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
             padding: 40px 0;
             opacity: 0;
-            pointer-events: none;
         }
         
         #splashScreen.visible {
             opacity: 1;
-            pointer-events: auto;
         }
         
         #splashScreen img {
             max-width: 80%;
-            max-height: 60vh;
+            max-height: 50vh;
             object-fit: contain;
             animation: bounceZoom 1s ease-in-out;
             margin-top: 40px;
@@ -528,14 +527,12 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 300px;
             text-align: center;
-            margin-bottom: 60px;
-            visibility: hidden;
+            margin-top: 40px;
         }
 
         #splashLoginForm.visible {
             display: block;
             opacity: 1;
-            visibility: visible;
         }
 
         #splashLoginForm input {
@@ -1596,7 +1593,7 @@
             location.reload();
         }
 
-        // Modify window.onload function
+        // Update window.onload function
         window.onload = async function() {
             console.log('[DEBUG] window.onload triggered');
             debugLog('Loading splash screen...');
@@ -1609,14 +1606,15 @@
             const splashScreen = document.getElementById('splashScreen');
             console.log('[DEBUG] Splash screen element:', splashScreen);
             
-            if (splashScreen) {
-                // Add visible class to show splash screen
-                splashScreen.classList.add('visible');
-                console.log('[DEBUG] Added visible class to splash screen');
-            } else {
+            if (!splashScreen) {
                 console.error('[DEBUG] Could not find splash screen element');
                 return;
             }
+
+            // Force a reflow before adding the visible class
+            splashScreen.offsetHeight;
+            splashScreen.classList.add('visible');
+            console.log('[DEBUG] Added visible class to splash screen');
             
             // Check for stored authentication first
             const storedAuth = loadUserFromLocalStorage();
@@ -1650,10 +1648,11 @@
                     console.log('[DEBUG] Starting splash animation timeout');
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     splashScreen.classList.remove('visible');
-                    setTimeout(() => {
-                        console.log('[DEBUG] Splash screen hidden, initializing game');
-                        initializeGame();
-                    }, 500);
+                    
+                    // Wait for fade out animation to complete
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    console.log('[DEBUG] Splash screen hidden, initializing game');
+                    initializeGame();
                     return;
                 }
             }
@@ -1665,30 +1664,26 @@
             const splashLoginForm = document.getElementById('splashLoginForm');
             console.log('[DEBUG] Login form element:', splashLoginForm);
             
-            if (splashLoginForm) {
-                // First set display to block and visibility to visible
-                splashLoginForm.style.display = 'block';
-                splashLoginForm.style.visibility = 'visible';
-                console.log('[DEBUG] Set login form display and visibility');
-                
-                // Force a reflow
-                splashLoginForm.offsetHeight;
-                
-                // Add visible class to trigger transition
-                setTimeout(() => {
-                    console.log('[DEBUG] Adding visible class to login form');
-                    splashLoginForm.classList.add('visible');
-                    console.log('[DEBUG] Current login form classes:', splashLoginForm.className);
-                    console.log('[DEBUG] Current login form style:', {
-                        display: splashLoginForm.style.display,
-                        opacity: splashLoginForm.style.opacity,
-                        visibility: window.getComputedStyle(splashLoginForm).visibility,
-                        transform: window.getComputedStyle(splashLoginForm).transform
-                    });
-                }, 50);
-            } else {
+            if (!splashLoginForm) {
                 console.error('[DEBUG] Could not find login form element');
+                return;
             }
+
+            // Show login form with transition
+            splashLoginForm.style.display = 'block';
+            console.log('[DEBUG] Set login form display to block');
+            
+            // Force a reflow
+            splashLoginForm.offsetHeight;
+            
+            // Add visible class to trigger transition
+            splashLoginForm.classList.add('visible');
+            console.log('[DEBUG] Added visible class to login form');
+            console.log('[DEBUG] Current login form style:', {
+                display: splashLoginForm.style.display,
+                opacity: window.getComputedStyle(splashLoginForm).opacity,
+                transform: window.getComputedStyle(splashLoginForm).transform
+            });
         };
 
         // Add functions to toggle between login and register forms
@@ -1863,66 +1858,6 @@
 
             // Rest of initialization code...
             // ... existing code ...
-        }
-
-        // Update window.onload to use event manager
-        window.onload = async function() {
-            debugLog('Loading splash screen...');
-            
-            // Clean up any existing resources
-            cleanupGameResources();
-            
-            // Rest of onload code...
-            // ... existing code ...
-        };
-
-        // Update handleLogout to clean up resources
-        async function handleLogout() {
-            debugLog('Logging out user');
-            clearStoredUser();
-            isAuthenticated = false;
-            currentUser = null;
-            authToken = null;
-            
-            // Clean up resources before reload
-            cleanupGameResources();
-            
-            location.reload();
-        }
-
-        // Update restartGame to clean up resources
-        function restartGame() {
-            debugLog('Restarting game...');
-            
-            // Clean up existing resources
-            cleanupGameResources();
-            
-            // Reset game variables
-            money = 1000;
-            inventory = {};
-            itemCosts = {};
-            currentTime = new Date();
-            currentTime.setHours(22, 0, 0);
-            lastVisitedStation = 'Kipling';
-            
-            // Reset UI
-            const gameOverModal = document.getElementById('gameOverModal');
-            if (gameOverModal) {
-                gameOverModal.style.display = 'none';
-            }
-            
-            // Select Kipling station
-            const kiplingButton = document.querySelector('.station-button');
-            if (kiplingButton) {
-                kiplingButton.classList.add('selected');
-            }
-            
-            // Update displays
-            updateTimeDisplay();
-            updateMenu('Kipling');
-            updateInventoryDisplay();
-            
-            debugLog('Game restarted successfully');
         }
 
         // Memory management
