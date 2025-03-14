@@ -1687,6 +1687,48 @@
             }
         }
 
+        function showSplashRegisterForm() {
+            console.log('[DEBUG] Showing splash register form');
+            const loginForm = document.getElementById('splashLoginForm');
+            const registerForm = document.getElementById('splashRegisterForm');
+            
+            if (loginForm && registerForm) {
+                // First hide login form
+                loginForm.classList.remove('visible');
+                setTimeout(() => {
+                    loginForm.style.display = 'none';
+                    
+                    // Then show register form
+                    registerForm.style.display = 'block';
+                    registerForm.offsetHeight; // Force reflow
+                    requestAnimationFrame(() => {
+                        registerForm.classList.add('visible');
+                    });
+                }, 500);
+            }
+        }
+
+        function showSplashLoginForm() {
+            console.log('[DEBUG] Showing splash login form');
+            const loginForm = document.getElementById('splashLoginForm');
+            const registerForm = document.getElementById('splashRegisterForm');
+            
+            if (loginForm && registerForm) {
+                // First hide register form
+                registerForm.classList.remove('visible');
+                setTimeout(() => {
+                    registerForm.style.display = 'none';
+                    
+                    // Then show login form
+                    loginForm.style.display = 'block';
+                    loginForm.offsetHeight; // Force reflow
+                    requestAnimationFrame(() => {
+                        loginForm.classList.add('visible');
+                    });
+                }, 500);
+            }
+        }
+
         // Add event listeners for Enter key on splash register inputs
         document.getElementById('splashRegisterUsername').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1806,48 +1848,6 @@
                 });
             });
         };
-
-        function showSplashRegisterForm() {
-            console.log('[DEBUG] Showing splash register form');
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
-            
-            if (loginForm && registerForm) {
-                // First hide login form
-                loginForm.classList.remove('visible');
-                setTimeout(() => {
-                    loginForm.style.display = 'none';
-                    
-                    // Then show register form
-                    registerForm.style.display = 'block';
-                    registerForm.offsetHeight; // Force reflow
-                    requestAnimationFrame(() => {
-                        registerForm.classList.add('visible');
-                    });
-                }, 500);
-            }
-        }
-
-        function showSplashLoginForm() {
-            console.log('[DEBUG] Showing splash login form');
-            const loginForm = document.getElementById('splashLoginForm');
-            const registerForm = document.getElementById('splashRegisterForm');
-            
-            if (loginForm && registerForm) {
-                // First hide register form
-                registerForm.classList.remove('visible');
-                setTimeout(() => {
-                    registerForm.style.display = 'none';
-                    
-                    // Then show login form
-                    loginForm.style.display = 'block';
-                    loginForm.offsetHeight; // Force reflow
-                    requestAnimationFrame(() => {
-                        loginForm.classList.add('visible');
-                    });
-                }, 500);
-            }
-        }
 
         async function handleSplashRegister() {
             console.log('[DEBUG] Starting registration process');
