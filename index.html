@@ -1077,24 +1077,24 @@
             const quantity = maxAffordable;
             const totalCost = price * quantity;
             
-            money -= totalCost;
+                money -= totalCost;
             inventory[item] = (inventory[item] || 0) + quantity;
             itemCosts[item] = (itemCosts[item] || 0) + totalCost;
             
             // Reduce station stock
             stationPrices[lastVisitedStation][item].stock -= quantity;
                 
-            console.log('Purchase successful:', {
+                console.log('Purchase successful:', {
                 item,
                 quantity,
                 totalCost,
-                newMoney: money,
-                newInventory: inventory,
+                    newMoney: money,
+                    newInventory: inventory,
                 itemCosts,
                 remainingStock: stationPrices[lastVisitedStation][item].stock
-            });
+                });
                 
-            updateInventoryDisplay();
+                updateInventoryDisplay();
             updateMenu(lastVisitedStation);
 
             // Save state after successful purchase
@@ -1231,7 +1231,7 @@
             
             updateMenu(station);
             updateInventoryDisplay();
-
+            
             // Save state after changing stations
             if (isAuthenticated && currentUser) {
                 console.log('[DEBUG] Auto-saving after station change...');
@@ -1494,62 +1494,6 @@
             // ... rest of existing code ...
         }
 
-        // Initialize game state and prices
-        function initializeGame() {
-            console.log('[DEBUG] Initializing game...');
-            
-            // Generate prices for all stations
-            stationOrder.forEach(station => {
-                stationPrices[station] = generateStationPrices();
-            });
-            
-            // Show game container
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.display = 'block';
-            }
-            
-            // Select Kipling station by default
-            const kiplingButton = document.querySelector('.station-button');
-            if (kiplingButton) {
-                kiplingButton.click();
-            }
-            
-            // Update displays
-            updateTimeDisplay();
-            updateMenu('Kipling');
-            updateInventoryDisplay();
-            
-            console.log('[DEBUG] Game initialized successfully');
-        }
-
-        // Add window.onload event handler
-        window.onload = function() {
-            console.log('[DEBUG] Window loaded, initializing splash screen');
-            
-            // Show splash screen
-            const splashScreen = document.getElementById('splashScreen');
-            if (splashScreen) {
-                splashScreen.style.display = 'flex';
-                splashScreen.classList.add('visible');
-            }
-            
-            // Show login form by default
-            const loginForm = document.getElementById('splashLoginForm');
-            if (loginForm) {
-                loginForm.style.display = 'block';
-                loginForm.classList.add('visible');
-            }
-            
-            // Hide game container initially
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.display = 'none';
-            }
-            
-            console.log('[DEBUG] Splash screen initialized');
-        };
-
         // Add login handler function
         async function handleSplashLogin() {
             console.log('[DEBUG] Starting login process');
@@ -1639,6 +1583,29 @@
                 }
             }
         }
+
+        // Initialize the game when the window loads
+        window.onload = function() {
+            console.log('[DEBUG] Window loaded, initializing splash screen');
+            const splashScreen = document.getElementById('splashScreen');
+            const splashLoginForm = document.getElementById('splashLoginForm');
+            
+            if (splashScreen && splashLoginForm) {
+                // Show splash screen
+                splashScreen.style.display = 'flex';
+                splashScreen.offsetHeight; // Force reflow
+                splashScreen.classList.add('visible');
+                
+                // Show login form with animation
+                setTimeout(() => {
+                    splashLoginForm.style.display = 'block';
+                    splashLoginForm.offsetHeight; // Force reflow
+                    splashLoginForm.classList.add('visible');
+                }, 500);
+            } else {
+                console.error('[ERROR] Could not find splash screen or login form elements');
+            }
+        };
     </script>
 </body>
 </html>
