@@ -1494,6 +1494,62 @@
             // ... rest of existing code ...
         }
 
+        // Initialize game state and prices
+        function initializeGame() {
+            console.log('[DEBUG] Initializing game...');
+            
+            // Generate prices for all stations
+            stationOrder.forEach(station => {
+                stationPrices[station] = generateStationPrices();
+            });
+            
+            // Show game container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'block';
+            }
+            
+            // Select Kipling station by default
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                kiplingButton.click();
+            }
+            
+            // Update displays
+            updateTimeDisplay();
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            
+            console.log('[DEBUG] Game initialized successfully');
+        }
+
+        // Add window.onload event handler
+        window.onload = function() {
+            console.log('[DEBUG] Window loaded, initializing splash screen');
+            
+            // Show splash screen
+            const splashScreen = document.getElementById('splashScreen');
+            if (splashScreen) {
+                splashScreen.style.display = 'flex';
+                splashScreen.classList.add('visible');
+            }
+            
+            // Show login form by default
+            const loginForm = document.getElementById('splashLoginForm');
+            if (loginForm) {
+                loginForm.style.display = 'block';
+                loginForm.classList.add('visible');
+            }
+            
+            // Hide game container initially
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.display = 'none';
+            }
+            
+            console.log('[DEBUG] Splash screen initialized');
+        };
+
         // Add login handler function
         async function handleSplashLogin() {
             console.log('[DEBUG] Starting login process');
