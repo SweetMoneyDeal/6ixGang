@@ -735,12 +735,12 @@
             <div class="time-display" id="time-display">10:00 PM</div>
             <div class="stations-scroll-container">
                 <div class="stations-wrapper">
-                    <button class="station-button selected" onclick="selectStation('Kipling')">Kipling</button>
+                    <button class="station-button" onclick="selectStation('Kipling')">Kipling</button>
                     <button class="station-button" onclick="selectStation('Jane')">Jane</button>
                     <button class="station-button" onclick="selectStation('Keele')">Keele</button>
                     <button class="station-button" onclick="selectStation('Dufferin')">Dufferin</button>
                     <button class="station-button" onclick="selectStation('Spadina')">Spadina</button>
-                    <button class="station-button" onclick="selectStation('Yonge')">Yonge</button>
+                    <button class="station-button selected" onclick="selectStation('Yonge')">Yonge</button>
                     <button class="station-button" onclick="selectStation('Sherbourne')">Sherbourne</button>
                     <button class="station-button" onclick="selectStation('Pape')">Pape</button>
                     <button class="station-button" onclick="selectStation('Main')">Main</button>
@@ -832,7 +832,7 @@
         let money = 1000;
         let highScores = [];
         let currentStation = null;
-        let lastVisitedStation = 'Kipling';
+        let lastVisitedStation = 'Yonge';
         let itemCosts = {};
         let itemBuyStations = {};
         let currentSellItem = null;
@@ -1318,12 +1318,12 @@
             // Update displays
             updateTimeDisplay();
             updateInventoryDisplay();
-            updateMenu('Kipling'); // Reset to starting station
+            updateMenu('Yonge'); // Reset to starting station
             
             // Reset station selection
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
-                if (btn.textContent === 'Kipling') {
+                if (btn.textContent === 'Yonge') {
                     btn.classList.add('selected');
                 }
             });
@@ -1410,15 +1410,18 @@
                 }
             });
             
-            lastVisitedStation = 'Kipling';
+            lastVisitedStation = 'Yonge';
             money = 1000;
             inventory = {};
             itemCosts = {};
             
-            const kiplingButton = document.querySelector('.station-button');
-            if (kiplingButton) {
-                kiplingButton.classList.add('selected');
-            }
+            // Select Yonge station button
+            document.querySelectorAll('.station-button').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.textContent === 'Yonge') {
+                    btn.classList.add('selected');
+                }
+            });
             
             const moneyDisplay = document.getElementById('menu-money-display');
             if (moneyDisplay) {
@@ -1426,9 +1429,20 @@
             }
             
             // Initialize game state without showing high scores
-            updateMenu('Kipling');
+            updateMenu('Yonge');
             updateInventoryDisplay();
             updateTimeDisplay();
+            
+            // Scroll to Yonge station
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            const yongeButton = document.querySelector('.station-button.selected');
+            if (scrollContainer && yongeButton) {
+                const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
+                scrollContainer.scrollTo({
+                    left: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
             
             console.log('=== Game Initialization Completed ===', {
                 station: lastVisitedStation,
