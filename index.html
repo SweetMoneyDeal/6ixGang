@@ -1243,37 +1243,39 @@
             return totalMinutes;
         }
 
-        function selectStation(station) {
+        function selectStation(stationName) {
             if (isGameOver) {
                 console.log('Game is over, cannot select stations');
                 return;
             }
-            console.log(`Selecting station: ${station}`);
+            console.log(`Selecting station: ${stationName}`);
             
             // Calculate minutes before updating lastVisitedStation
-            const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
+            const stationIndex = stationOrder.indexOf(stationName);
+            const lastStationIndex = stationOrder.indexOf(lastVisitedStation);
+            const stationDistance = Math.abs(stationIndex - lastStationIndex);
+            const minutesToAdd = stationDistance * 3;
+            
             console.log('Minutes to add:', minutesToAdd);
             
-            if (minutesToAdd > 0) {
-                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
-                console.log('New time:', currentTime);
-                updateTimeDisplay();
-            }
+            // Update time
+            currentTime = new Date(currentTime.getTime() + minutesToAdd * 60000);
+            console.log('New time:', currentTime);
             
-            // Update station after time calculation
-            lastVisitedStation = station;
+            // Update last visited station
+            lastVisitedStation = stationName;
             
-            // Update button states
+            // Update station button selection
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
-                if (btn.textContent === station) {
+                if (btn.textContent === stationName) {
                     btn.classList.add('selected');
                 }
             });
             
-            // Center the selected station
+            // Center the selected station button
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            const selectedButton = document.querySelector(`.station-button[onclick*="${station}"]`);
+            const selectedButton = document.querySelector(`.station-button[onclick*="${stationName}"]`);
             if (scrollContainer && selectedButton) {
                 const scrollOffset = selectedButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
@@ -1282,8 +1284,9 @@
                 });
             }
             
-            updateMenu(station);
-            updateInventoryDisplay();
+            // Update displays
+            updateTimeDisplay();
+            updateMenu(stationName);
         }
 
         function updateTimeDisplay() {
@@ -1651,15 +1654,16 @@
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
 
-            // Add click handlers to station buttons
+            // Remove the old click handlers and use the onclick attribute instead
             document.querySelectorAll('.station-button').forEach(button => {
-                button.addEventListener('click', (e) => {
+                const station = button.textContent;
+                button.onclick = (e) => {
                     if (!isScrolling) {
-                        const station = e.target.textContent;
                         selectStation(station);
                     }
                     isScrolling = false;
-                });
+                    e.preventDefault(); // Prevent any default behavior
+                };
             });
         });
 
