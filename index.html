@@ -614,9 +614,9 @@
             
             <div class="boxes-container">
                 <div class="box">
-                    <div class="money-display" id="menu-money-display">
-                        <img src="cash.png" alt="Cash">
-                        $${formatMoney(money)}
+                    <div class="money-display">
+                        <img src="Cash.png" alt="Cash">
+                        <span id="menu-money-display">$1000</span>
                     </div>
                     <h3>Menu</h3>
                     <div id="menu-list">
@@ -756,12 +756,9 @@
             menuList.innerHTML = '';
             
             // Update money display in menu box
-            const moneyDisplay = document.getElementById('menu-money-display');
-            if (moneyDisplay) {
-                moneyDisplay.innerHTML = `
-                    <img src="cash.png" alt="Cash">
-                    $${formatMoney(money)}
-                `;
+            const menuMoneyDisplay = document.getElementById('menu-money-display');
+            if (menuMoneyDisplay) {
+                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
             }
             
             const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
@@ -1317,6 +1314,22 @@
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
         });
+
+        function updateMoneyDisplay() {
+            console.log('Updating money display:', money);
+            
+            // Update money display in menu box
+            const menuMoneyDisplay = document.getElementById('menu-money-display');
+            if (menuMoneyDisplay) {
+                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
+            }
+            
+            // Update money display in inventory box
+            const inventoryMoney = document.getElementById('inventory-money');
+            if (inventoryMoney) {
+                inventoryMoney.textContent = `$${formatMoney(money)}`;
+            }
+        }
     </script>
 </body>
 </html>
