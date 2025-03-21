@@ -1469,10 +1469,11 @@
                 stationPrices[station] = generateStationPrices();
             });
             
-            // Close all modals by removing 'visible' class
+            // Close all modals by removing 'visible' class and setting display to none
             document.querySelectorAll('.modal').forEach(modal => {
-                console.log('Removing visible class from modal:', modal.id);
+                console.log('Closing modal:', modal.id);
                 modal.classList.remove('visible');
+                modal.style.display = 'none';
             });
             
             // Update displays
@@ -1498,6 +1499,12 @@
                     behavior: 'smooth'
                 });
             }
+            
+            // Scroll page to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
             
             console.log('Game restarted successfully');
         }
