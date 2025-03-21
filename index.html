@@ -1305,8 +1305,8 @@
                 timeDisplay.classList.add('flash');
                 setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
                 
-                // Check if time has reached or passed midnight (00:00)
-                if (!isGameOver && (hours === 0 || hours >= 1)) {
+                // Only check for game over if we're not in initialization
+                if (!window.isInitializing && !isGameOver && (hours === 0 || hours >= 1)) {
                     console.log('Game over - Time has reached or passed midnight');
                     showGameOver();
                 }
@@ -1534,6 +1534,7 @@
         // Move the window.onload content to a separate function
         async function initializeGame() {
             console.log('=== Game Initialization Started ===');
+            window.isInitializing = true;  // Set initialization flag
             
             // Double check modal visibility
             document.querySelectorAll('.modal').forEach(modal => {
@@ -1548,6 +1549,11 @@
             money = 1000;
             inventory = {};
             itemCosts = {};
+            isGameOver = false;
+            
+            // Reset time to 10:00 PM
+            currentTime = new Date();
+            currentTime.setHours(22, 0, 0);
             
             // Select Yonge station button
             document.querySelectorAll('.station-button').forEach(btn => {
@@ -1588,6 +1594,8 @@
                     viewHighScores: document.getElementById('viewHighScoresModal').style.display
                 }
             });
+            
+            window.isInitializing = false;  // Clear initialization flag
         }
 
         window.onclick = function(event) {
