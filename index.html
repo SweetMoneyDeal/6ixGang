@@ -1338,6 +1338,9 @@
             try {
                 // Fetch current high scores
                 const response = await fetch('/api/highscores');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const scores = await response.json();
                 
                 console.log('Received high scores:', scores);
@@ -1346,14 +1349,20 @@
                 updateHighScoresDisplay(scores);
                 
                 // Check if current score is a high score
-                if (scores.length < 10 || money > scores[scores.length - 1].score) {
+                if (scores.length < 10 || money > scores[scores.length - 1]?.score || scores.length === 0) {
                     console.log('New high score achieved! Showing high score modal');
-                    document.getElementById('highScoreModal').classList.add('visible');
+                    const highScoreModal = document.getElementById('highScoreModal');
+                    highScoreModal.classList.add('visible');
+                    highScoreModal.style.display = 'flex';
                 } else {
                     console.log('No new high score achieved');
                 }
             } catch (error) {
                 console.error('Error checking high scores:', error);
+                // Still show the game over modal even if high scores fail
+                const gameOverModal = document.getElementById('gameOverModal');
+                gameOverModal.classList.add('visible');
+                gameOverModal.style.display = 'flex';
             }
         }
 
@@ -1378,14 +1387,25 @@
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const updatedScores = await response.json();
                 console.log('High score saved successfully:', updatedScores);
                 
                 // Update the display with new scores
                 updateHighScoresDisplay(updatedScores);
                 
-                // Close the high score input modal
-                document.getElementById('highScoreModal').classList.remove('visible');
+                // Close the high score input modal and show game over modal
+                const highScoreModal = document.getElementById('highScoreModal');
+                const gameOverModal = document.getElementById('gameOverModal');
+                
+                highScoreModal.classList.remove('visible');
+                highScoreModal.style.display = 'none';
+                
+                gameOverModal.classList.add('visible');
+                gameOverModal.style.display = 'flex';
             } catch (error) {
                 console.error('Error saving high score:', error);
                 alert('Failed to save high score. Please try again.');
@@ -1403,6 +1423,14 @@
             
             console.log('Clearing and updating high scores list');
             highScoresList.innerHTML = '';
+            
+            if (!scores || scores.length === 0) {
+                const noScoresMessage = document.createElement('div');
+                noScoresMessage.className = 'high-score-item';
+                noScoresMessage.innerHTML = '<span class="high-score-name" style="text-align: center; width: 100%;">No high scores yet!</span>';
+                highScoresList.appendChild(noScoresMessage);
+                return;
+            }
             
             scores.forEach((score, index) => {
                 const scoreItem = document.createElement('div');
