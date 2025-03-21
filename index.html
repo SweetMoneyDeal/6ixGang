@@ -58,9 +58,10 @@
         .stations-wrapper {
             display: flex;
             gap: 10px;
-            padding: 0 calc(50vw - 60px);  /* 60px is half of station button width */
+            padding: 0 calc(50vw - 60px);
             min-width: max-content;
             position: relative;
+            scroll-snap-align: center;
         }
         .stations-wrapper::before,
         .stations-wrapper::after {
@@ -1032,29 +1033,13 @@
             // Update station after time calculation
             lastVisitedStation = station;
             
-            // Update button states and center the selected station
-            const scrollContainer = document.querySelector('.stations-scroll-container');
-            const selectedButton = Array.from(document.querySelectorAll('.station-button')).find(btn => btn.textContent === station);
-            
+            // Update button states
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
                 if (btn.textContent === station) {
                     btn.classList.add('selected');
                 }
             });
-
-            if (selectedButton && scrollContainer) {
-                const containerRect = scrollContainer.getBoundingClientRect();
-                const buttonRect = selectedButton.getBoundingClientRect();
-                
-                const scrollOffset = buttonRect.left - containerRect.left - 
-                                   (containerRect.width / 2) + (buttonRect.width / 2);
-                
-                scrollContainer.scrollBy({
-                    left: scrollOffset,
-                    behavior: 'smooth'
-                });
-            }
             
             updateMenu(station);
             updateInventoryDisplay();
@@ -1295,38 +1280,29 @@
             let isDown = false;
             let startX;
             let scrollLeft;
-            let isDragging = false;
 
             scrollContainer.addEventListener('mousedown', (e) => {
                 isDown = true;
                 scrollContainer.style.cursor = 'grabbing';
                 startX = e.pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
-                isDragging = false;
             });
 
             scrollContainer.addEventListener('mouseleave', () => {
                 isDown = false;
                 scrollContainer.style.cursor = 'grab';
-                if (isDragging) {
-                    snapToNearestStation(scrollContainer);
-                }
             });
 
             scrollContainer.addEventListener('mouseup', () => {
                 isDown = false;
                 scrollContainer.style.cursor = 'grab';
-                if (isDragging) {
-                    snapToNearestStation(scrollContainer);
-                }
             });
 
             scrollContainer.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
-                isDragging = true;
                 const x = e.pageX - scrollContainer.offsetLeft;
-                const walk = (x - startX) * 2;
+                const walk = (x - startX);
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
 
@@ -1335,57 +1311,26 @@
                 isDown = true;
                 startX = e.touches[0].pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
-                isDragging = false;
             });
 
             scrollContainer.addEventListener('touchend', () => {
                 isDown = false;
-                if (isDragging) {
-                    snapToNearestStation(scrollContainer);
-                }
             });
 
             scrollContainer.addEventListener('touchmove', (e) => {
                 if (!isDown) return;
-                isDragging = true;
                 const x = e.touches[0].pageX - scrollContainer.offsetLeft;
-                const walk = (x - startX) * 2;
+                const walk = (x - startX);
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
 
-            function snapToNearestStation(container) {
-                const stations = Array.from(container.querySelectorAll('.station-button'));
-                const containerCenter = container.offsetWidth / 2;
-                const containerRect = container.getBoundingClientRect();
-                
-                let closestStation = null;
-                let minDistance = Infinity;
-                
-                stations.forEach(station => {
-                    const stationRect = station.getBoundingClientRect();
-                    const stationCenter = stationRect.left - containerRect.left + (stationRect.width / 2);
-                    const distance = Math.abs(stationCenter - containerCenter);
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestStation = station;
-                    }
+            // Add click handlers to station buttons
+            document.querySelectorAll('.station-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const station = e.target.textContent;
+                    selectStation(station);
                 });
-                
-                if (closestStation) {
-                    const stationRect = closestStation.getBoundingClientRect();
-                    const scrollOffset = stationRect.left - containerRect.left - 
-                                      (containerRect.width / 2) + (stationRect.width / 2);
-                    
-                    container.scrollBy({
-                        left: scrollOffset,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Trigger station selection
-                    closestStation.click();
-                }
-            }
+            });
         });
 
         function updateMoneyDisplay() {
