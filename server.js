@@ -6,6 +6,17 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const HOST = '0.0.0.0';
 
+// Trust proxy for Railway
+app.set('trust proxy', 1);
+
+// Redirect HTTP to HTTPS in production
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV === 'production' && !req.secure) {
+        return res.redirect('https://' + req.headers.host + req.url);
+    }
+    next();
+});
+
 // Parse JSON bodies
 app.use(express.json());
 
@@ -14,6 +25,8 @@ app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
+    // Allow your custom domain and Railway domain
+    res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGINS || '*');
     next();
 });
 

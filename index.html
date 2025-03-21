@@ -216,12 +216,16 @@
         .modal-content {
             position: relative;
             background-color: white;
-            margin: 15% auto;
+            margin: 15vh auto;
             padding: 20px;
             width: 300px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 70vh;
         }
         .modal-title {
             font-size: 32px;
@@ -288,15 +292,23 @@
         .high-scores {
             margin: 20px 0;
             text-align: left;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .high-scores h3 {
             margin: 0 0 10px 0;
             color: #333;
             font-size: 18px;
+            text-align: center;
         }
         #high-scores-list {
             min-height: 300px;
             overflow-y: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .high-score-item {
             display: grid;
@@ -348,9 +360,10 @@
             }
             
             .box {
-                width: 100%;
+                width: 90%;
+                max-width: 90%;
                 padding: 10px;
-                margin: 5px 0;
+                margin: 5px auto;
             }
             
             .item-name {
@@ -374,6 +387,12 @@
             
             h3 {
                 font-size: 22px;
+            }
+
+            .boxes-container {
+                width: 100%;
+                padding: 0 10px;
+                box-sizing: border-box;
             }
         }
         #buttons {
