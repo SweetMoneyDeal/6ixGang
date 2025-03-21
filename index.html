@@ -1061,9 +1061,17 @@
             });
         }
 
-        function updateInventoryDisplay() {
-            console.log('Updating money display:', money);
+        function updateMoneyDisplayInMenu() {
+            console.log('Updating money display in menu:', money);
             updateMoneyDisplay();
+        }
+
+        function updateMoneyDisplay() {
+            console.log('Updating money display:', money);
+            const menuMoneyDisplay = document.getElementById('menu-money-display');
+            if (menuMoneyDisplay) {
+                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
+            }
         }
 
         function handleBuy(item, price) {
@@ -1113,7 +1121,7 @@
                 remainingStock: stationPrices[lastVisitedStation][item].stock
             });
             
-            updateInventoryDisplay();
+            updateMoneyDisplayInMenu();
             updateMenu(lastVisitedStation);
         }
 
@@ -1163,7 +1171,7 @@
                 stationStock: stationPrices[lastVisitedStation][item].stock
             });
             
-            updateInventoryDisplay();
+            updateMoneyDisplayInMenu();
             updateMenu(lastVisitedStation);
         }
 
@@ -1209,7 +1217,7 @@
                     stationStock: stationPrices[lastVisitedStation][currentSellItem].stock
                 });
                 
-                updateInventoryDisplay();
+                updateMoneyDisplayInMenu();
                 updateMenu(lastVisitedStation);
             }
             
@@ -1478,7 +1486,7 @@
             
             // Update displays
             updateTimeDisplay();
-            updateInventoryDisplay();
+            updateMoneyDisplayInMenu();
             updateMenu('Yonge'); // Reset to starting station
             
             // Reset station selection
@@ -1606,7 +1614,7 @@
             
             // Initialize game state without showing high scores
             updateMenu('Yonge');
-            updateInventoryDisplay();
+            updateMoneyDisplayInMenu();
             updateTimeDisplay();
             
             // Scroll to Yonge station
@@ -1739,14 +1747,6 @@
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
         });
-
-        function updateMoneyDisplay() {
-            console.log('Updating money display:', money);
-            const menuMoneyDisplay = document.getElementById('menu-money-display');
-            if (menuMoneyDisplay) {
-                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
-            }
-        }
     </script>
 </body>
 </html>
