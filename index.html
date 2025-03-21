@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6ixGang</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+        }
+        .station-button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            background-color: #808080;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 120px;
+            text-align: center;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            flex: 0 0 auto;
+            scroll-snap-align: center;
+        }
+        .station-button:hover {
+            background-color: #666666;
+        }
+        .station-button.selected {
+            background-color: #ff0000;
+            cursor: default;
+        }
+        .station-button.selected:hover {
+            background-color: #ff0000;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #333;
+        }
+        .boxes-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .box {
+            width: 90%;
+            max-width: 400px;
+            height: auto;
+            min-height: 600px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px auto;
+        }
+        .box h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .money-display {
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .money-display img {
+            width: 100px;
+            height: auto;
+            object-fit: contain;
+        }
+        .box p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        #menu-list {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin: 12px 0;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 18px;
+            box-sizing: border-box;
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+        .item-name {
+            font-weight: bold;
+            font-size: 28px;
+            color: #333;
+            text-align: left;
+        }
+        .price-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 8px;
+        }
+        .buy-price, .sell-price {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .buy-price {
+            color: #4CAF50;
+        }
+        .sell-price {
+            color: #f44336;
+        }
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            align-self: center;
+        }
+        .action-button {
+            padding: 8px;
+            font-size: 18px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            min-width: 100px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        .action-button.sell {
+            background-color: #f44336;
+        }
+        .action-button.sell:hover {
+            background-color: #da190b;
+        }
+        #inventory-stats {
+            text-align: left;
+            width: 100%;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .station-name {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .time-display {
+            font-size: 24px;
+            color: #333;
+            margin: 10px 0 20px 0;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .time-display.flash {
+            color: #ff0000;
+            animation: flashEffect 1s ease;
+        }
+        @keyframes flashEffect {
+            0% { color: #ff0000; }
+            100% { color: #333; }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: bold;
+        }
+        #gameOverModal .modal-title {
+            font-size: 40px;
+            color: #000000;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+        .modal-content p {
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .modal-button.confirm {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .modal-button.cancel {
+            background-color: #f44336;
+            color: white;
+        }
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+        }
+        .inventory-item:last-child {
+            border-bottom: none;
+        }
+        .inventory-item .action-button {
+            margin-left: 10px;
+        }
+        .high-scores {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .high-scores h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        #high-scores-list {
+            min-height: 300px;
+            overflow-y: visible;
+        }
+        .high-score-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            align-items: center;
+        }
+        .high-score-item:last-child {
+            border-bottom: none;
+        }
+        .high-score-rank {
+            color: #666;
+        }
+        .high-score-name {
+            color: #666;
+            text-align: left;
+        }
+        .high-score-value {
+            color: #000000;
+            font-weight: bold;
+            text-align: right;
+        }
+        #view-high-scores-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        #viewHighScoresModal .modal-content {
+            width: 400px;
+        }
+        #viewHighScoresModal .high-score-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #viewHighScoresModal .high-score-item:last-child {
+            border-bottom: none;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .box {
+                width: 100%;
+                padding: 10px;
+                margin: 5px 0;
+            }
+            
+            .item-name {
+                font-size: 24px;
+            }
+            
+            .buy-price, .sell-price {
+                font-size: 17px;
+            }
+            
+            .action-button {
+                font-size: 16px;
+                padding: 6px;
+                min-width: 90px;
+                height: 36px;
+            }
+            
+            .money-display {
+                font-size: 22px;
+            }
+            
+            h3 {
+                font-size: 22px;
+            }
+        }
+        #buttons {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
+            -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+            white-space: nowrap;
+            padding: 10px 0;
+            scroll-snap-type: x mandatory;
+        }
+        /* Hide scrollbar for Chrome/Safari */
+        #buttons::-webkit-scrollbar {
+            display: none;
+        }
+        #buttons::after {
+            content: '';
+            padding-right: 1px; /* Ensures last button can be centered */
+        }
+        /* Splash screen styles */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+        }
+
+        #splash-screen img {
+            max-width: 80%;
+            max-height: 80vh;
+            object-fit: contain;
+            animation: logoBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes logoBounce {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            20% { transform: scale(1.3); }
+            25% { transform: scale(1.2); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.05); }
+            50% { transform: scale(1.15); }
+            55% { transform: scale(1.1); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Hide main content initially */
+        .main-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add splash screen -->
+    <div id="splash-screen">
+        <img src="6ixGang.jpg" alt="6ixGang Logo">
+    </div>
+
+    <!-- Wrap existing content in main-content div -->
+    <div class="main-content">
+        <div class="container">
+            <h1>6ixGang</h1>
+            <div class="time-display" id="time-display">10:00 PM</div>
+            <div id="buttons">
+                <button class="station-button" onclick="handleStationClick('Kipling', this)">Kipling</button>
+                <button class="station-button" onclick="handleStationClick('Jane', this)">Jane</button>
+                <button class="station-button" onclick="handleStationClick('Keele', this)">Keele</button>
+                <button class="station-button" onclick="handleStationClick('Dufferin', this)">Dufferin</button>
+                <button class="station-button" onclick="handleStationClick('Spadina', this)">Spadina</button>
+                <button class="station-button" onclick="handleStationClick('Yonge', this)">Yonge</button>
+                <button class="station-button" onclick="handleStationClick('Sherbourne', this)">Sherbourne</button>
+                <button class="station-button" onclick="handleStationClick('Pape', this)">Pape</button>
+                <button class="station-button" onclick="handleStationClick('Main', this)">Main</button>
+                <button class="station-button" onclick="handleStationClick('Warden', this)">Warden</button>
+                <button class="station-button" onclick="handleStationClick('Kennedy', this)">Kennedy</button>
+            </div>
+            
+            <div class="boxes-container">
+                <div class="box">
+                    <div class="money-display" id="menu-money-display">
+                        <img src="cash.png" alt="Cash">
+                        $${formatMoney(money)}
+                    </div>
+                    <h3>Menu</h3>
+                    <div id="menu-list">
+                        <!-- Menu items will be dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add sell modal HTML -->
+        <div id="sellModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">How many units would you like to sell?</div>
+                <input type="number" id="sellQuantityInput" class="modal-input" min="1" value="1">
+                <div class="modal-buttons">
+                    <button class="modal-button cancel" onclick="closeSellModal()">Cancel</button>
+                    <button class="modal-button confirm" onclick="confirmSell()">Sell</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add game over modal HTML -->
+        <div id="gameOverModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">Game Over!</div>
+                <p>The clock struck midnight, Your day is done. Try again tomorrow!</p>
+                <p>Final Money: $<span id="final-money">0</span></p>
+                <div class="high-scores">
+                    <h3>Top 10 High Scores</h3>
+                    <div id="high-scores-list">
+                        <!-- High scores will be dynamically populated -->
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button confirm" onclick="restartGame()">Play Again</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add high score name modal HTML -->
+        <div id="highScoreModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">New High Score!</div>
+                <p>Congratulations! You've made it to the top 10!</p>
+                <p>Enter your name to save your score:</p>
+                <input type="text" id="playerNameInput" class="modal-input" maxlength="20" placeholder="Enter your name">
+                <div class="modal-buttons">
+                    <button class="modal-button confirm" onclick="saveHighScore()">Save Score</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this new modal for viewing high scores -->
+        <div id="viewHighScoresModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">High Scores</div>
+                <div class="high-scores">
+                    <div id="view-high-scores-list">
+                        <!-- High scores will be populated here -->
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button confirm" onclick="closeHighScoresModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let selectedStations = [];
+        let inventory = {};
+        let money = 1000;
+        let highScores = [];
+        let currentStation = null;
+        let lastVisitedStation = 'Kipling';
+        let itemCosts = {};
+        let itemBuyStations = {};
+        let currentSellItem = null;
+        let currentSellPrice = 0;
+        let currentTime = new Date();
+        currentTime.setHours(22, 0, 0);
+
+        // Define station order
+        const stationOrder = ['Kipling', 'Jane', 'Keele', 'Dufferin', 'Spadina', 'Yonge', 'Sherbourne', 'Pape', 'Main', 'Warden', 'Kennedy'];
+
+        // Price ranges for each item
+        const itemPriceRanges = {
+            'Cocaine': { min: 2000, max: 15000 },
+            'Heroin': { min: 1000, max: 5000 },
+            'LSD': { min: 500, max: 2000 },
+            'Ketamine': { min: 200, max: 800 },
+            'Weed': { min: 10, max: 200 }
+        };
+
+        function getRandomPrice(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateStationPrices() {
+            const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
+            const prices = {};
+            
+            items.forEach(item => {
+                const range = itemPriceRanges[item];
+                const price = getRandomPrice(range.min, range.max);
+                console.log(`Generated price for ${item}:`, price);
+                // Add stock amount between 0 and 10
+                const stock = Math.floor(Math.random() * 11);
+                prices[item] = { price: price, stock: stock };
+            });
+            
+            return prices;
+        }
+
+        const stationPrices = {
+            'Kipling': generateStationPrices(),
+            'Jane': generateStationPrices(),
+            'Keele': generateStationPrices(),
+            'Dufferin': generateStationPrices(),
+            'Spadina': generateStationPrices(),
+            'Yonge': generateStationPrices(),
+            'Sherbourne': generateStationPrices(),
+            'Pape': generateStationPrices(),
+            'Main': generateStationPrices(),
+            'Warden': generateStationPrices(),
+            'Kennedy': generateStationPrices()
+        };
+
+        function formatMoney(amount) {
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function updateMenu(station) {
+            console.log(`Updating menu for station: ${station}`);
+            const menuList = document.getElementById('menu-list');
+            menuList.innerHTML = '';
+            
+            // Update money display in menu box
+            const moneyDisplay = document.getElementById('menu-money-display');
+            if (moneyDisplay) {
+                moneyDisplay.innerHTML = `
+                    <img src="cash.png" alt="Cash">
+                    $${formatMoney(money)}
+                `;
+            }
+            
+            const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
+            items.forEach(item => {
+                const prices = stationPrices[station][item];
+                console.log(`${item} prices:`, prices);
+                
+                const maxBuyable = Math.min(
+                    Math.floor(money / prices.price),
+                    prices.stock // Limit by available stock
+                );
+                const currentInventory = inventory[item] || 0;
+                const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
+                console.log(`Maximum buyable ${item}:`, maxBuyable);
+                
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <div class="item-info">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="item-name">${item}</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
+                        </div>
+                        <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
+                            <strong style="font-size: 16px;">${prices.stock}</strong> units available.<br>
+                            You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
+                        </div>
+                        <div class="price-info">
+                            <div class="price-row">
+                                <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
+                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                menuList.appendChild(menuItem);
+            });
+        }
+
+        function updateInventoryDisplay() {
+            console.log('Updating inventory display with current station:', lastVisitedStation);
+            
+            const inventoryStats = document.getElementById('inventory-stats');
+            const inventoryMoney = document.getElementById('inventory-money');
+            
+            if (!inventoryStats || !inventoryMoney) {
+                console.error('Could not find inventory elements');
+                return;
+            }
+            
+            inventoryMoney.textContent = `Money: $${formatMoney(money)}`;
+            inventoryStats.innerHTML = '';
+            
+            console.log('Current inventory:', inventory);
+            
+            Object.entries(inventory).forEach(([item, quantity]) => {
+                if (quantity > 0 && stationPrices[lastVisitedStation] && stationPrices[lastVisitedStation][item]) {
+                    const totalCost = itemCosts[item] || 0;
+                    const averagePrice = Math.round(totalCost / quantity);
+                    const sellPrice = stationPrices[lastVisitedStation][item].price;
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'inventory-item';
+                    itemDiv.innerHTML = `
+                        <div style="flex: 1;">
+                            <span class="item-name">${item}</span>
+                            <span style="color: #666; margin-left: 10px;">Avg: $${formatMoney(averagePrice)}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: #666;">Total: ${quantity}</span>
+                            <button class="action-button sell" onclick="handleSell('${item}', ${sellPrice})">Sell</button>
+                        </div>
+                    `;
+                    inventoryStats.appendChild(itemDiv);
+                }
+            });
+        }
+
+        function handleBuy(item, price) {
+            console.log(`Processing immediate purchase of ${item} at $${price}`);
+            
+            const stationStock = stationPrices[lastVisitedStation][item].stock;
+            if (stationStock <= 0) {
+                console.log('No stock available');
+                return;
+            }
+            
+            if (money < price) {
+                return;
+            }
+            
+            const maxAffordable = Math.min(
+                Math.floor(money / price),
+                stationStock // Limit by available stock
+            );
+            
+            if (maxAffordable <= 0) {
+                return;
+            }
+
+            // Buy maximum affordable amount immediately
+            const quantity = maxAffordable;
+            const totalCost = price * quantity;
+            
+            money -= totalCost;
+            inventory[item] = (inventory[item] || 0) + quantity;
+            itemCosts[item] = (itemCosts[item] || 0) + totalCost;
+            
+            // Reduce station stock
+            stationPrices[lastVisitedStation][item].stock -= quantity;
+            
+            console.log('Purchase successful:', {
+                item,
+                quantity,
+                totalCost,
+                newMoney: money,
+                newInventory: inventory,
+                itemCosts,
+                remainingStock: stationPrices[lastVisitedStation][item].stock
+            });
+            
+            updateInventoryDisplay();
+            updateMenu(lastVisitedStation);
+        }
+
+        function closeBuyModal() {
+            const modal = document.getElementById('buyModal');
+            modal.style.display = 'none';
+            currentBuyItem = null;
+            currentBuyPrice = 0;
+        }
+
+        function handleSell(item, price) {
+            console.log(`Processing immediate sale of ${item} at $${price}`);
+            
+            const maxAvailable = inventory[item] || 0;
+            if (maxAvailable <= 0) {
+                return;
+            }
+
+            // Sell all available items immediately
+            const quantity = maxAvailable;
+            const totalPrice = price * quantity;
+            
+            // Add items back to station inventory
+            stationPrices[lastVisitedStation][item].stock += quantity;
+            console.log(`Added ${quantity} ${item}(s) back to ${lastVisitedStation} station inventory`);
+            
+            money += totalPrice;
+            inventory[item] -= quantity;
+            
+            if (inventory[item] <= 0) {
+                delete inventory[item];
+                delete itemCosts[item];
+            } else {
+                const remainingQuantity = inventory[item];
+                const averageCost = itemCosts[item] / (remainingQuantity + quantity);
+                itemCosts[item] = averageCost * remainingQuantity;
+            }
+            
+            console.log('Sale successful:', {
+                newMoney: money,
+                newInventory: inventory,
+                itemCosts,
+                stationStock: stationPrices[lastVisitedStation][item].stock
+            });
+            
+            updateInventoryDisplay();
+            updateMenu(lastVisitedStation);
+        }
+
+        function closeSellModal() {
+            const modal = document.getElementById('sellModal');
+            modal.style.display = 'none';
+            currentSellItem = null;
+            currentSellPrice = 0;
+        }
+
+        function confirmSell() {
+            const quantity = parseInt(document.getElementById('sellQuantityInput').value) || 0;
+            const totalPrice = currentSellPrice * quantity;
+            
+            console.log(`Attempting to sell ${quantity} units of ${currentSellItem} at $${currentSellPrice} each`);
+            
+            if (quantity <= 0) {
+                console.error('Invalid quantity');
+                return;
+            }
+            
+            if (quantity <= (inventory[currentSellItem] || 0)) {
+                // Add items back to station inventory
+                stationPrices[lastVisitedStation][currentSellItem].stock += quantity;
+                console.log(`Added ${quantity} ${currentSellItem}(s) back to ${lastVisitedStation} station inventory`);
+                
+                money += totalPrice;
+                inventory[currentSellItem] -= quantity;
+                
+                if (inventory[currentSellItem] <= 0) {
+                    delete inventory[currentSellItem];
+                    delete itemCosts[currentSellItem];
+                } else {
+                    const remainingQuantity = inventory[currentSellItem];
+                    const averageCost = itemCosts[currentSellItem] / (remainingQuantity + quantity);
+                    itemCosts[currentSellItem] = averageCost * remainingQuantity;
+                }
+                
+                console.log('Sale successful:', {
+                    newMoney: money,
+                    newInventory: inventory,
+                    itemCosts,
+                    stationStock: stationPrices[lastVisitedStation][currentSellItem].stock
+                });
+                
+                updateInventoryDisplay();
+                updateMenu(lastVisitedStation);
+            }
+            
+            closeSellModal();
+        }
+
+        function handleStationClick(station, button) {
+            console.log('Station clicked:', {
+                station,
+                previousStation: lastVisitedStation
+            });
+            
+            // Calculate minutes before updating lastVisitedStation
+            const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
+            console.log('Minutes to add:', minutesToAdd);
+            
+            if (minutesToAdd > 0) {
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                console.log('New time:', currentTime);
+                updateTimeDisplay();
+            }
+            
+            // Update station after time calculation
+            lastVisitedStation = station;
+            
+            document.querySelectorAll('.station-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            button.classList.add('selected');
+            
+            updateMenu(station);
+            updateInventoryDisplay();
+        }
+
+        function calculateMinutesForStationChange(fromStation, toStation) {
+            console.log('Calculating minutes between stations:', { fromStation, toStation });
+            
+            const fromIndex = stationOrder.indexOf(fromStation);
+            const toIndex = stationOrder.indexOf(toStation);
+            
+            console.log('Station indices:', { fromIndex, toIndex });
+            
+            if (fromIndex === -1 || toIndex === -1) return 3;
+            if (fromStation === toStation) return 0;
+            
+            const stationsPassed = Math.abs(toIndex - fromIndex);
+            const minutesToAdd = stationsPassed * 3;
+            
+            console.log('Time calculation:', { stationsPassed, minutesToAdd });
+            return minutesToAdd;
+        }
+
+        function updateTimeDisplay() {
+            console.log('Updating time display');
+            const timeDisplay = document.getElementById('time-display');
+            if (timeDisplay) {
+                const hours = currentTime.getHours();
+                const minutes = currentTime.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const displayHours = hours % 12 || 12;
+                const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                console.log('New time string:', timeString);
+                timeDisplay.textContent = timeString;
+                
+                timeDisplay.classList.add('flash');
+                setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
+                
+                if (hours === 0 || (hours === 1 && minutes > 0)) {
+                    console.log('Game over condition met');
+                    showGameOver();
+                }
+            }
+        }
+
+        function showGameOver() {
+            console.log('Game Over - Time has run out');
+            const modal = document.getElementById('gameOverModal');
+            const finalMoneySpan = document.getElementById('final-money');
+            
+            if (finalMoneySpan) {
+                finalMoneySpan.textContent = formatMoney(money);
+            }
+            
+            // Check if this is a high score and update the display
+            checkAndDisplayHighScore();
+            
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        async function checkAndDisplayHighScore() {
+            console.log('Checking if current score is a high score...');
+            try {
+                // Fetch current high scores
+                const response = await fetch('/api/highscores');
+                const scores = await response.json();
+                
+                // Update the high scores display
+                updateHighScoresDisplay(scores);
+                
+                // Check if current score is a high score
+                if (scores.length < 10 || money > scores[scores.length - 1].score) {
+                    console.log('New high score achieved!');
+                    document.getElementById('highScoreModal').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking high scores:', error);
+            }
+        }
+
+        async function saveHighScore() {
+            console.log('Saving high score...');
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/highscores', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: playerName,
+                        score: money
+                    })
+                });
+                
+                const updatedScores = await response.json();
+                console.log('High score saved successfully:', updatedScores);
+                
+                // Update the display with new scores
+                updateHighScoresDisplay(updatedScores);
+                
+                // Close the high score input modal
+                document.getElementById('highScoreModal').style.display = 'none';
+            } catch (error) {
+                console.error('Error saving high score:', error);
+                alert('Failed to save high score. Please try again.');
+            }
+        }
+
+        function updateHighScoresDisplay(scores) {
+            console.log('Updating high scores display:', scores);
+            const highScoresList = document.getElementById('high-scores-list');
+            
+            if (!highScoresList) {
+                console.error('High scores list element not found');
+                return;
+            }
+            
+            highScoresList.innerHTML = '';
+            
+            scores.forEach((score, index) => {
+                const scoreItem = document.createElement('div');
+                scoreItem.className = 'high-score-item';
+                
+                // Check if this is the current player's new score
+                const isCurrentPlayerScore = score.score === money && 
+                                          score.date && 
+                                          (new Date(score.date)).getTime() > (new Date()).getTime() - 5000; // Within last 5 seconds
+                
+                const textColor = isCurrentPlayerScore ? '#4CAF50' : '#666'; // Green for current player, gray for others
+                
+                scoreItem.innerHTML = `
+                    <span class="high-score-rank" style="color: ${textColor}">#${index + 1}</span>
+                    <span class="high-score-name" style="color: ${textColor}">${score.name}</span>
+                    <span class="high-score-value" style="color: ${isCurrentPlayerScore ? '#4CAF50' : '#000000'}">${'$' + formatMoney(score.score)}</span>
+                `;
+                highScoresList.appendChild(scoreItem);
+            });
+        }
+
+        function restartGame() {
+            console.log('Restarting game...');
+            
+            // Reset game variables
+            money = 1000;
+            inventory = {};
+            itemCosts = {};
+            currentTime = new Date();
+            currentTime.setHours(22, 0, 0);
+            lastVisitedStation = 'Kipling';
+            
+            // Reset UI
+            const gameOverModal = document.getElementById('gameOverModal');
+            if (gameOverModal) {
+                gameOverModal.style.display = 'none';
+            }
+            
+            // Select Kipling station
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                document.querySelectorAll('.station-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                kiplingButton.classList.add('selected');
+            }
+            
+            // Update displays
+            updateTimeDisplay();
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            
+            console.log('Game restarted successfully');
+        }
+
+        // Add splash screen handling at the top of the script
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Loading splash screen...');
+            const splashScreen = document.getElementById('splash-screen');
+            const mainContent = document.querySelector('.main-content');
+
+            // Show splash screen for 2 seconds
+            setTimeout(() => {
+                console.log('Fading out splash screen...');
+                splashScreen.classList.add('fade-out');
+                
+                // After fade animation, hide splash and show main content
+                setTimeout(() => {
+                    console.log('Removing splash screen and showing main content...');
+                    splashScreen.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    // Initialize the game
+                    initializeGame();
+                }, 500); // Wait for fade animation to complete
+            }, 2000);
+        });
+
+        // Move the window.onload content to a separate function
+        async function initializeGame() {
+            console.log('Initializing game...');
+            
+            lastVisitedStation = 'Kipling';
+            money = 1000;
+            inventory = {};
+            itemCosts = {};
+            
+            const kiplingButton = document.querySelector('.station-button');
+            if (kiplingButton) {
+                kiplingButton.classList.add('selected');
+            }
+            
+            const moneyDisplay = document.getElementById('menu-money-display');
+            if (moneyDisplay) {
+                moneyDisplay.textContent = `Cash: $${formatMoney(money)}`;
+            }
+            
+            // Fetch and display initial high scores
+            try {
+                const response = await fetch('/api/highscores');
+                const scores = await response.json();
+                updateHighScoresDisplay(scores);
+            } catch (error) {
+                console.error('Error fetching initial high scores:', error);
+            }
+            
+            updateMenu('Kipling');
+            updateInventoryDisplay();
+            updateTimeDisplay();
+            
+            console.log('Game initialized:', {
+                station: lastVisitedStation,
+                money,
+                inventory
+            });
+        }
+
+        window.onclick = function(event) {
+            const gameOverModal = document.getElementById('gameOverModal');
+            const highScoreModal = document.getElementById('highScoreModal');
+            const viewHighScoresModal = document.getElementById('viewHighScoresModal');
+            
+            if (event.target === gameOverModal) restartGame();
+            if (event.target === viewHighScoresModal) closeHighScoresModal();
+        };
+    </script>
+</body>
+</html>

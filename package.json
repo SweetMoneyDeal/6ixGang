@@ -1,0 +1,13 @@
+{
+  "name": "6ixgang",
+  "version": "1.0.0",
+  "description": "6ixGang Game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.2.0"
+  }
+}
