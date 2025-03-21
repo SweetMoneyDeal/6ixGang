@@ -598,12 +598,17 @@
             <div class="time-display" id="time-display">10:00 PM</div>
             <div class="stations-scroll-container">
                 <div class="stations-wrapper">
-                    <button class="station-button selected" onclick="selectStation('Scarborough')">Scarborough</button>
-                    <button class="station-button" onclick="selectStation('Vaughan')">Vaughan</button>
-                    <button class="station-button" onclick="selectStation('Downtown')">Downtown</button>
-                    <button class="station-button" onclick="selectStation('Mississauga')">Mississauga</button>
-                    <button class="station-button" onclick="selectStation('Brampton')">Brampton</button>
-                    <button class="station-button" onclick="selectStation('Markham')">Markham</button>
+                    <button class="station-button selected" onclick="selectStation('Kipling')">Kipling</button>
+                    <button class="station-button" onclick="selectStation('Jane')">Jane</button>
+                    <button class="station-button" onclick="selectStation('Keele')">Keele</button>
+                    <button class="station-button" onclick="selectStation('Dufferin')">Dufferin</button>
+                    <button class="station-button" onclick="selectStation('Spadina')">Spadina</button>
+                    <button class="station-button" onclick="selectStation('Yonge')">Yonge</button>
+                    <button class="station-button" onclick="selectStation('Sherbourne')">Sherbourne</button>
+                    <button class="station-button" onclick="selectStation('Pape')">Pape</button>
+                    <button class="station-button" onclick="selectStation('Main')">Main</button>
+                    <button class="station-button" onclick="selectStation('Warden')">Warden</button>
+                    <button class="station-button" onclick="selectStation('Kennedy')">Kennedy</button>
                 </div>
             </div>
             
@@ -977,6 +982,33 @@
             closeSellModal();
         }
 
+        function calculateMinutesForStationChange(fromStation, toStation) {
+            console.log('Calculating minutes between stations:', fromStation, toStation);
+            
+            const stations = ['Kipling', 'Jane', 'Keele', 'Dufferin', 'Spadina', 'Yonge', 
+                            'Sherbourne', 'Pape', 'Main', 'Warden', 'Kennedy'];
+            
+            if (!fromStation || !toStation) {
+                console.log('First station visit or invalid station');
+                return 0;
+            }
+            
+            const fromIndex = stations.indexOf(fromStation);
+            const toIndex = stations.indexOf(toStation);
+            
+            if (fromIndex === -1 || toIndex === -1) {
+                console.log('Invalid station name');
+                return 0;
+            }
+            
+            const stationDifference = Math.abs(toIndex - fromIndex);
+            const minutesPerStation = 3;
+            const totalMinutes = stationDifference * minutesPerStation;
+            
+            console.log('Minutes to add:', totalMinutes);
+            return totalMinutes;
+        }
+
         function selectStation(station) {
             console.log('Station selected:', station);
             
@@ -1003,24 +1035,6 @@
             
             updateMenu(station);
             updateInventoryDisplay();
-        }
-
-        function calculateMinutesForStationChange(fromStation, toStation) {
-            console.log('Calculating minutes between stations:', { fromStation, toStation });
-            
-            const fromIndex = stationOrder.indexOf(fromStation);
-            const toIndex = stationOrder.indexOf(toStation);
-            
-            console.log('Station indices:', { fromIndex, toIndex });
-            
-            if (fromIndex === -1 || toIndex === -1) return 3;
-            if (fromStation === toStation) return 0;
-            
-            const stationsPassed = Math.abs(toIndex - fromIndex);
-            const minutesToAdd = stationsPassed * 3;
-            
-            console.log('Time calculation:', { stationsPassed, minutesToAdd });
-            return minutesToAdd;
         }
 
         function updateTimeDisplay() {
