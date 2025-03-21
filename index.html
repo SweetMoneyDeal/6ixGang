@@ -1143,19 +1143,23 @@
         }
 
         async function checkAndDisplayHighScore() {
-            console.log('Checking if current score is a high score...');
+            console.log('=== Checking High Scores ===');
             try {
                 // Fetch current high scores
                 const response = await fetch('/api/highscores');
                 const scores = await response.json();
+                
+                console.log('Received high scores:', scores);
                 
                 // Update the high scores display
                 updateHighScoresDisplay(scores);
                 
                 // Check if current score is a high score
                 if (scores.length < 10 || money > scores[scores.length - 1].score) {
-                    console.log('New high score achieved!');
+                    console.log('New high score achieved! Showing high score modal');
                     document.getElementById('highScoreModal').style.display = 'block';
+                } else {
+                    console.log('No new high score achieved');
                 }
             } catch (error) {
                 console.error('Error checking high scores:', error);
@@ -1198,7 +1202,7 @@
         }
 
         function updateHighScoresDisplay(scores) {
-            console.log('Updating high scores display:', scores);
+            console.log('=== Updating High Scores Display ===');
             const highScoresList = document.getElementById('high-scores-list');
             
             if (!highScoresList) {
@@ -1206,6 +1210,7 @@
                 return;
             }
             
+            console.log('Clearing and updating high scores list');
             highScoresList.innerHTML = '';
             
             scores.forEach((score, index) => {
@@ -1272,25 +1277,48 @@
 
         // Add splash screen handling at the top of the script
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Loading splash screen...');
+            console.log('=== DOM Content Loaded ===');
             const splashScreen = document.getElementById('splash-screen');
             const mainContent = document.querySelector('.main-content');
+            const gameOverModal = document.getElementById('gameOverModal');
+            const highScoreModal = document.getElementById('highScoreModal');
+            const viewHighScoresModal = document.getElementById('viewHighScoresModal');
+            
+            console.log('Initial modal states:', {
+                gameOverModal: gameOverModal ? gameOverModal.style.display : 'not found',
+                highScoreModal: highScoreModal ? highScoreModal.style.display : 'not found',
+                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.style.display : 'not found'
+            });
             
             // Hide all modals initially
             document.querySelectorAll('.modal').forEach(modal => {
+                console.log('Setting display:none for modal:', modal.id);
                 modal.style.display = 'none';
+            });
+            
+            console.log('Modal states after hiding:', {
+                gameOverModal: gameOverModal ? gameOverModal.style.display : 'not found',
+                highScoreModal: highScoreModal ? highScoreModal.style.display : 'not found',
+                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.style.display : 'not found'
             });
 
             // Show splash screen for 2 seconds
             setTimeout(() => {
-                console.log('Fading out splash screen...');
+                console.log('=== Splash Screen Fade Out ===');
                 splashScreen.classList.add('fade-out');
                 
                 // After fade animation, hide splash and show main content
                 setTimeout(() => {
-                    console.log('Removing splash screen and showing main content...');
+                    console.log('=== Initializing Main Content ===');
                     splashScreen.style.display = 'none';
                     mainContent.style.display = 'block';
+                    
+                    console.log('Modal states before game init:', {
+                        gameOverModal: gameOverModal ? gameOverModal.style.display : 'not found',
+                        highScoreModal: highScoreModal ? highScoreModal.style.display : 'not found',
+                        viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.style.display : 'not found'
+                    });
+                    
                     // Initialize the game
                     initializeGame();
                 }, 500); // Wait for fade animation to complete
@@ -1299,7 +1327,16 @@
 
         // Move the window.onload content to a separate function
         async function initializeGame() {
-            console.log('Initializing game...');
+            console.log('=== Game Initialization Started ===');
+            
+            // Double check modal visibility
+            document.querySelectorAll('.modal').forEach(modal => {
+                console.log(`Modal ${modal.id} display state:`, modal.style.display);
+                if (modal.style.display !== 'none') {
+                    console.log('Forcing modal to hide:', modal.id);
+                    modal.style.display = 'none';
+                }
+            });
             
             lastVisitedStation = 'Kipling';
             money = 1000;
@@ -1321,10 +1358,15 @@
             updateInventoryDisplay();
             updateTimeDisplay();
             
-            console.log('Game initialized:', {
+            console.log('=== Game Initialization Completed ===', {
                 station: lastVisitedStation,
                 money,
-                inventory
+                inventory,
+                modalStates: {
+                    gameOver: document.getElementById('gameOverModal').style.display,
+                    highScore: document.getElementById('highScoreModal').style.display,
+                    viewHighScores: document.getElementById('viewHighScoresModal').style.display
+                }
             });
         }
 
