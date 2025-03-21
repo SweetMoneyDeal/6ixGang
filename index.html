@@ -1256,11 +1256,12 @@
             const stationDistance = Math.abs(stationIndex - lastStationIndex);
             const minutesToAdd = stationDistance * 3;
             
+            console.log('Time before update:', currentTime.toLocaleTimeString());
             console.log('Minutes to add:', minutesToAdd);
             
             // Update time
             currentTime = new Date(currentTime.getTime() + minutesToAdd * 60000);
-            console.log('New time:', currentTime);
+            console.log('Time after update:', currentTime.toLocaleTimeString());
             
             // Update last visited station
             lastVisitedStation = stationName;
@@ -1306,8 +1307,8 @@
                 setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
                 
                 // Only check for game over if we're not in initialization
-                if (!window.isInitializing && !isGameOver && (hours === 0 || hours >= 1)) {
-                    console.log('Game over - Time has reached or passed midnight');
+                if (!window.isInitializing && !isGameOver && hours === 0) {
+                    console.log('Game over - Time has reached midnight');
                     showGameOver();
                 }
             }
