@@ -1171,6 +1171,17 @@
                 }
             });
             
+            // Center the selected station
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            const selectedButton = document.querySelector(`.station-button[onclick*="${station}"]`);
+            if (scrollContainer && selectedButton) {
+                const scrollOffset = selectedButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
+                scrollContainer.scrollTo({
+                    left: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
+            
             updateMenu(station);
             updateInventoryDisplay();
         }
