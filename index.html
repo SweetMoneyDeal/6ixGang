@@ -44,6 +44,9 @@
             margin: 0 -10px;
             cursor: grab;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
         }
         .stations-scroll-container::-webkit-scrollbar {
             display: none;
@@ -55,7 +58,7 @@
         .stations-wrapper {
             display: flex;
             gap: 10px;
-            padding: 0 20px;
+            padding: 0 calc(50vw - 60px);  /* 60px is half of station button width */
             min-width: max-content;
             position: relative;
         }
@@ -97,6 +100,7 @@
             white-space: nowrap;
             transform: scale(0.95);
             opacity: 0.8;
+            position: relative;
         }
         .station-button:hover {
             background-color: #666666;
@@ -105,9 +109,10 @@
         }
         .station-button.selected {
             background-color: #ff0000;
-            transform: scale(1);
+            transform: scale(1.05);
             opacity: 1;
             box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+            z-index: 1;
         }
         .station-button.selected:hover {
             background-color: #ff0000;
@@ -496,8 +501,7 @@
             }
             
             .stations-wrapper {
-                gap: 8px;
-                padding: 0 15px;
+                padding: 0 calc(50vw - 50px);  /* 50px is half of mobile station button width */
             }
         }
         /* Additional styles for very small screens */
@@ -1275,27 +1279,36 @@
             let isDown = false;
             let startX;
             let scrollLeft;
+            let isDragging = false;
 
             scrollContainer.addEventListener('mousedown', (e) => {
                 isDown = true;
                 scrollContainer.style.cursor = 'grabbing';
                 startX = e.pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
+                isDragging = false;
             });
 
             scrollContainer.addEventListener('mouseleave', () => {
                 isDown = false;
                 scrollContainer.style.cursor = 'grab';
+                if (isDragging) {
+                    snapToNearestStation(scrollContainer);
+                }
             });
 
             scrollContainer.addEventListener('mouseup', () => {
                 isDown = false;
                 scrollContainer.style.cursor = 'grab';
+                if (isDragging) {
+                    snapToNearestStation(scrollContainer);
+                }
             });
 
             scrollContainer.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
+                isDragging = true;
                 const x = e.pageX - scrollContainer.offsetLeft;
                 const walk = (x - startX) * 2;
                 scrollContainer.scrollLeft = scrollLeft - walk;
@@ -1306,19 +1319,57 @@
                 isDown = true;
                 startX = e.touches[0].pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
+                isDragging = false;
             });
 
             scrollContainer.addEventListener('touchend', () => {
                 isDown = false;
+                if (isDragging) {
+                    snapToNearestStation(scrollContainer);
+                }
             });
 
             scrollContainer.addEventListener('touchmove', (e) => {
                 if (!isDown) return;
-                e.preventDefault();
+                isDragging = true;
                 const x = e.touches[0].pageX - scrollContainer.offsetLeft;
                 const walk = (x - startX) * 2;
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
+
+            function snapToNearestStation(container) {
+                const stations = Array.from(container.querySelectorAll('.station-button'));
+                const containerCenter = container.offsetWidth / 2;
+                const containerRect = container.getBoundingClientRect();
+                
+                let closestStation = null;
+                let minDistance = Infinity;
+                
+                stations.forEach(station => {
+                    const stationRect = station.getBoundingClientRect();
+                    const stationCenter = stationRect.left - containerRect.left + (stationRect.width / 2);
+                    const distance = Math.abs(stationCenter - containerCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestStation = station;
+                    }
+                });
+                
+                if (closestStation) {
+                    const stationRect = closestStation.getBoundingClientRect();
+                    const scrollOffset = stationRect.left - containerRect.left - 
+                                      (containerRect.width / 2) + (stationRect.width / 2);
+                    
+                    container.scrollBy({
+                        left: scrollOffset,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Trigger station selection
+                    closestStation.click();
+                }
+            }
         });
 
         function updateMoneyDisplay() {
