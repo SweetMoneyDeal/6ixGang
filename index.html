@@ -1170,35 +1170,43 @@
         function restartGame() {
             console.log('Restarting game...');
             
-            // Reset game variables
+            // Reset game state
             money = 1000;
             inventory = {};
-            itemCosts = {};
             currentTime = new Date();
-            currentTime.setHours(22, 0, 0);
-            lastVisitedStation = 'Kipling';
-            
-            // Reset UI
-            const gameOverModal = document.getElementById('gameOverModal');
-            if (gameOverModal) {
-                gameOverModal.style.display = 'none';
-            }
-            
-            // Select Kipling station
-            const kiplingButton = document.querySelector('.station-button');
-            if (kiplingButton) {
-                document.querySelectorAll('.station-button').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                kiplingButton.classList.add('selected');
-            }
+            currentTime.setHours(22, 0, 0); // 10:00 PM
+            lastVisitedStation = null;
             
             // Update displays
             updateTimeDisplay();
-            updateMenu('Kipling');
             updateInventoryDisplay();
+            updateMenu('Kipling'); // Reset to starting station
             
-            console.log('Game restarted successfully');
+            // Reset station selection
+            document.querySelectorAll('.station-button').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.textContent === 'Kipling') {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // Scroll to top of page
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            
+            // Reset station scroll position
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            if (scrollContainer) {
+                scrollContainer.scrollTo({
+                    left: 0,
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Close modal
+            closeGameOverModal();
         }
 
         // Add splash screen handling at the top of the script
