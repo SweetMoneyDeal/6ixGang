@@ -289,19 +289,21 @@
         .modal-content {
             position: relative;
             background-color: white;
-            padding: 30px;
+            padding: 20px;
             width: 90%;
-            max-width: 500px;
+            max-width: 400px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             transform: translateY(0);
             opacity: 1;
             transition: transform 0.3s ease, opacity 0.3s ease;
+            margin: 0 auto;
+            box-sizing: border-box;
         }
         
         .modal.hidden .modal-content {
@@ -561,6 +563,30 @@
             .stations-wrapper {
                 padding: 0 calc(50vw - 50px);  /* 50px is half of mobile station button width */
             }
+
+            .modal-content {
+                padding: 15px;
+                width: 95%;
+                max-width: none;
+                margin: 10px;
+            }
+            
+            .modal-title {
+                font-size: 24px;
+            }
+            
+            #gameOverModal .modal-title {
+                font-size: 32px;
+            }
+            
+            .high-scores h3 {
+                font-size: 16px;
+            }
+            
+            .high-score-item {
+                font-size: 14px;
+                padding: 4px 0;
+            }
         }
         /* Additional styles for very small screens */
         @media (max-width: 380px) {
@@ -585,6 +611,20 @@
             
             .money-display img {
                 width: 50px;
+            }
+
+            .modal-content {
+                padding: 10px;
+                margin: 5px;
+            }
+            
+            .modal-title {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+            
+            #gameOverModal .modal-title {
+                font-size: 28px;
             }
         }
         #buttons {
