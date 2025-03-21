@@ -56,11 +56,16 @@ async function loadHighScores() {
 // Save high scores to file
 async function saveHighScores(scores) {
     try {
+        console.log('Attempting to save high scores:', scores);
         await fs.writeFile(highScoresPath, JSON.stringify(scores, null, 2), { 
             mode: 0o666, // Set file permissions to be readable/writable
             flag: 'w' // Create file if it doesn't exist
         });
-        console.log('High scores saved successfully');
+        console.log('High scores saved successfully to:', highScoresPath);
+        
+        // Verify the save by reading back
+        const savedData = await fs.readFile(highScoresPath, 'utf8');
+        console.log('Verified saved data:', savedData);
     } catch (error) {
         console.error('Error saving high scores:', error);
         throw error; // Re-throw to handle in the route
@@ -89,11 +94,13 @@ app.get('/', (req, res) => {
 // API Routes
 app.get('/api/highscores', async (req, res) => {
     try {
+        console.log('Fetching high scores...');
         // Reload from file to ensure we have latest data
         highScores = await loadHighScores();
         const topScores = highScores
             .sort((a, b) => b.score - a.score)
             .slice(0, 10);
+        console.log('Sending high scores to client:', topScores);
         res.json(topScores);
     } catch (error) {
         console.error('Error fetching high scores:', error);
@@ -103,14 +110,18 @@ app.get('/api/highscores', async (req, res) => {
 
 app.post('/api/highscores', async (req, res) => {
     try {
+        console.log('Received new high score request:', req.body);
         const { name, score } = req.body;
         
         if (!name || typeof score !== 'number') {
+            console.error('Invalid score data received:', { name, score });
             return res.status(400).json({ error: 'Invalid score data' });
         }
         
         // Reload current scores from file
+        console.log('Loading existing scores...');
         highScores = await loadHighScores();
+        console.log('Current high scores:', highScores);
         
         const newScore = { 
             name: name.slice(0, 20), // Limit name length
@@ -118,6 +129,7 @@ app.post('/api/highscores', async (req, res) => {
             date: new Date().toISOString() 
         };
         
+        console.log('Adding new score:', newScore);
         highScores.push(newScore);
         
         // Sort and get top 10 scores
@@ -126,6 +138,7 @@ app.post('/api/highscores', async (req, res) => {
             .slice(0, 10);
         
         // Update the stored high scores
+        console.log('Saving updated high scores:', topScores);
         highScores = topScores;
         await saveHighScores(highScores);
         
