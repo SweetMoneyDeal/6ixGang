@@ -729,6 +729,9 @@
             height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+        }
+
+        #gameOverModal.visible, #highScoreModal.visible {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1294,14 +1297,15 @@
             const finalMoneySpan = document.getElementById('final-money');
             
             if (finalMoneySpan) {
-                finalMoneySpan.textContent = formatMoney(money);
+                finalMoneySpan.textContent = `$${formatMoney(money)}`;
             }
             
             // Check if this is a high score and update the display
             checkAndDisplayHighScore();
             
             if (modal) {
-                modal.style.display = 'block';
+                modal.classList.add('visible');
+                console.log('Game over modal displayed');
             }
         }
 
@@ -1320,7 +1324,7 @@
                 // Check if current score is a high score
                 if (scores.length < 10 || money > scores[scores.length - 1].score) {
                     console.log('New high score achieved! Showing high score modal');
-                    document.getElementById('highScoreModal').style.display = 'block';
+                    document.getElementById('highScoreModal').classList.add('visible');
                 } else {
                     console.log('No new high score achieved');
                 }
@@ -1357,7 +1361,7 @@
                 updateHighScoresDisplay(updatedScores);
                 
                 // Close the high score input modal
-                document.getElementById('highScoreModal').style.display = 'none';
+                document.getElementById('highScoreModal').classList.remove('visible');
             } catch (error) {
                 console.error('Error saving high score:', error);
                 alert('Failed to save high score. Please try again.');
@@ -1404,7 +1408,7 @@
             inventory = {};
             currentTime = new Date();
             currentTime.setHours(22, 0, 0); // 10:00 PM
-            lastVisitedStation = 'Yonge'; // Set to Yonge instead of null
+            lastVisitedStation = 'Yonge';
             
             // Generate new prices for all stations
             stationPrices = {};
@@ -1444,8 +1448,15 @@
             
             // Close all modals
             document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
+                modal.classList.remove('visible');
+                console.log('Closing modal:', modal.id);
             });
+            
+            // Show main content
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.style.display = 'block';
+            }
             
             console.log('Game restarted successfully');
         }
@@ -1468,21 +1479,21 @@
             const viewHighScoresModal = document.getElementById('viewHighScoresModal');
             
             console.log('Initial modal states:', {
-                gameOverModal: gameOverModal ? gameOverModal.style.display : 'not found',
-                highScoreModal: highScoreModal ? highScoreModal.style.display : 'not found',
-                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.style.display : 'not found'
+                gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
+                highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
+                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
             });
             
             // Hide all modals initially
             document.querySelectorAll('.modal').forEach(modal => {
-                console.log('Setting display:none for modal:', modal.id);
-                modal.style.display = 'none';
+                console.log('Removing visible class from modal:', modal.id);
+                modal.classList.remove('visible');
             });
             
             console.log('Modal states after hiding:', {
-                gameOverModal: gameOverModal ? gameOverModal.style.display : 'not found',
-                highScoreModal: highScoreModal ? highScoreModal.style.display : 'not found',
-                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.style.display : 'not found'
+                gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
+                highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
+                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
             });
 
             // Show splash screen for 2 seconds
@@ -1497,9 +1508,9 @@
                     mainContent.style.display = 'block';
                     
                     console.log('Modal states before game init:', {
-                        gameOverModal: gameOverModal ? gameOverModal.style.display : 'not found',
-                        highScoreModal: highScoreModal ? highScoreModal.style.display : 'not found',
-                        viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.style.display : 'not found'
+                        gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
+                        highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
+                        viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
                     });
                     
                     // Initialize the game
