@@ -286,7 +286,7 @@
         .modal-content {
             position: relative;
             background-color: white;
-            padding: 20px;
+            padding: 30px;
             width: 90%;
             max-width: 400px;
             height: 600px;
@@ -300,7 +300,7 @@
             transform: translateY(0);
             opacity: 1;
             transition: transform 0.3s ease, opacity 0.3s ease;
-            margin: 0 auto;
+            margin: 0;
             box-sizing: border-box;
             overflow-y: auto;
         }
@@ -720,12 +720,31 @@
             }
         }
 
+        #gameOverModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         #gameOverModal .modal-content {
             height: 600px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             padding: 30px;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         #gameOverModal .high-scores {
@@ -761,8 +780,10 @@
 
         @media (max-width: 768px) {
             #gameOverModal .modal-content {
-                height:50vh;
-                max-height: 400px;
+                height: 80vh;
+                max-height: 600px;
+                width: 90%;
+                max-width: 400px;
                 padding: 20px;
             }
         }
