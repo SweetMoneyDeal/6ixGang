@@ -896,17 +896,17 @@
             <div class="time-display" id="time-display">10:00 PM</div>
             <div class="stations-scroll-container">
                 <div class="stations-wrapper">
-                    <button class="station-button" onclick="selectStation('Kipling')">Kipling</button>
-                    <button class="station-button" onclick="selectStation('Jane')">Jane</button>
-                    <button class="station-button" onclick="selectStation('Keele')">Keele</button>
-                    <button class="station-button" onclick="selectStation('Dufferin')">Dufferin</button>
-                    <button class="station-button" onclick="selectStation('Spadina')">Spadina</button>
-                    <button class="station-button selected" onclick="selectStation('Yonge')">Yonge</button>
-                    <button class="station-button" onclick="selectStation('Sherbourne')">Sherbourne</button>
-                    <button class="station-button" onclick="selectStation('Pape')">Pape</button>
-                    <button class="station-button" onclick="selectStation('Main')">Main</button>
-                    <button class="station-button" onclick="selectStation('Warden')">Warden</button>
-                    <button class="station-button" onclick="selectStation('Kennedy')">Kennedy</button>
+                    <button class="station-button" data-station="Kipling">Kipling</button>
+                    <button class="station-button" data-station="Jane">Jane</button>
+                    <button class="station-button" data-station="Keele">Keele</button>
+                    <button class="station-button" data-station="Dufferin">Dufferin</button>
+                    <button class="station-button" data-station="Spadina">Spadina</button>
+                    <button class="station-button selected" data-station="Yonge">Yonge</button>
+                    <button class="station-button" data-station="Sherbourne">Sherbourne</button>
+                    <button class="station-button" data-station="Pape">Pape</button>
+                    <button class="station-button" data-station="Main">Main</button>
+                    <button class="station-button" data-station="Warden">Warden</button>
+                    <button class="station-button" data-station="Kennedy">Kennedy</button>
                 </div>
             </div>
             
@@ -1268,14 +1268,14 @@
             // Update station button selection
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
-                if (btn.textContent === stationName) {
+                if (btn.dataset.station === stationName) {
                     btn.classList.add('selected');
                 }
             });
             
             // Center the selected station button
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            const selectedButton = document.querySelector(`.station-button[onclick*="${stationName}"]`);
+            const selectedButton = document.querySelector(`.station-button[data-station="${stationName}"]`);
             if (scrollContainer && selectedButton) {
                 const scrollOffset = selectedButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
@@ -1454,14 +1454,14 @@
             // Reset station selection
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
-                if (btn.textContent === 'Yonge') {
+                if (btn.dataset.station === 'Yonge') {
                     btn.classList.add('selected');
                 }
             });
             
             // Scroll to Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            const yongeButton = document.querySelector('.station-button[onclick*="Yonge"]');
+            const yongeButton = document.querySelector('.station-button[data-station="Yonge"]');
             if (scrollContainer && yongeButton) {
                 const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
@@ -1558,7 +1558,7 @@
             // Select Yonge station button
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
-                if (btn.textContent === 'Yonge') {
+                if (btn.dataset.station === 'Yonge') {
                     btn.classList.add('selected');
                 }
             });
@@ -1614,6 +1614,33 @@
             let startX;
             let scrollLeft;
             let isScrolling = false;
+            let startTime;
+
+            function handleStationClick(e) {
+                const currentTime = new Date().getTime();
+                const button = e.currentTarget;
+                const station = button.dataset.station;
+                
+                // If this was a scroll action, don't select the station
+                if (isScrolling) {
+                    console.log('Ignoring click due to scrolling');
+                    return;
+                }
+                
+                // If this was a long press, don't select the station
+                if (startTime && (currentTime - startTime) > 200) {
+                    console.log('Ignoring click due to long press');
+                    return;
+                }
+                
+                console.log('Station clicked:', station);
+                selectStation(station);
+            }
+
+            // Add click handlers to all station buttons
+            document.querySelectorAll('.station-button').forEach(button => {
+                button.addEventListener('click', handleStationClick);
+            });
 
             scrollContainer.addEventListener('mousedown', (e) => {
                 isDown = true;
@@ -1621,6 +1648,7 @@
                 startX = e.pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
                 isScrolling = false;
+                startTime = new Date().getTime();
             });
 
             scrollContainer.addEventListener('mouseleave', () => {
@@ -1631,14 +1659,20 @@
             scrollContainer.addEventListener('mouseup', () => {
                 isDown = false;
                 scrollContainer.style.cursor = 'grab';
+                // Reset scrolling flag after a short delay
+                setTimeout(() => {
+                    isScrolling = false;
+                }, 50);
             });
 
             scrollContainer.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
-                isScrolling = true;
                 const x = e.pageX - scrollContainer.offsetLeft;
                 const walk = (x - startX);
+                if (Math.abs(walk) > 5) { // Only set scrolling if moved more than 5px
+                    isScrolling = true;
+                }
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
 
@@ -1648,30 +1682,25 @@
                 startX = e.touches[0].pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
                 isScrolling = false;
+                startTime = new Date().getTime();
             });
 
             scrollContainer.addEventListener('touchend', () => {
                 isDown = false;
+                // Reset scrolling flag after a short delay
+                setTimeout(() => {
+                    isScrolling = false;
+                }, 50);
             });
 
             scrollContainer.addEventListener('touchmove', (e) => {
                 if (!isDown) return;
-                isScrolling = true;
                 const x = e.touches[0].pageX - scrollContainer.offsetLeft;
                 const walk = (x - startX);
+                if (Math.abs(walk) > 5) { // Only set scrolling if moved more than 5px
+                    isScrolling = true;
+                }
                 scrollContainer.scrollLeft = scrollLeft - walk;
-            });
-
-            // Remove the old click handlers and use the onclick attribute instead
-            document.querySelectorAll('.station-button').forEach(button => {
-                const station = button.textContent;
-                button.onclick = (e) => {
-                    if (!isScrolling) {
-                        selectStation(station);
-                    }
-                    isScrolling = false;
-                    e.preventDefault(); // Prevent any default behavior
-                };
             });
         });
 
