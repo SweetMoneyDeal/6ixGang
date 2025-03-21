@@ -955,6 +955,7 @@
         let currentSellItem = null;
         let currentSellPrice = 0;
         let currentTime = new Date();
+        let isGameOver = false;  // Add game over flag
         currentTime.setHours(22, 0, 0);
 
         // Define station order
@@ -1009,6 +1010,10 @@
         }
 
         function updateMenu(station) {
+            if (isGameOver) {
+                console.log('Game is over, skipping menu update');
+                return;
+            }
             console.log(`Updating menu for station: ${station}`);
             const menuList = document.getElementById('menu-list');
             menuList.innerHTML = '';
@@ -1062,6 +1067,10 @@
         }
 
         function handleBuy(item, price) {
+            if (isGameOver) {
+                console.log('Game is over, cannot buy items');
+                return;
+            }
             console.log(`Processing immediate purchase of ${item} at $${price}`);
             
             const stationStock = stationPrices[lastVisitedStation][item].stock;
@@ -1116,6 +1125,10 @@
         }
 
         function handleSell(item, price) {
+            if (isGameOver) {
+                console.log('Game is over, cannot sell items');
+                return;
+            }
             console.log(`Processing immediate sale of ${item} at $${price}`);
             
             const maxAvailable = inventory[item] || 0;
@@ -1231,7 +1244,11 @@
         }
 
         function selectStation(station) {
-            console.log('Station selected:', station);
+            if (isGameOver) {
+                console.log('Game is over, cannot select stations');
+                return;
+            }
+            console.log(`Selecting station: ${station}`);
             
             // Calculate minutes before updating lastVisitedStation
             const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
@@ -1286,23 +1303,16 @@
                 setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
                 
                 // Check if time has reached or passed midnight (00:00)
-                if (hours === 0 && minutes >= 0) {
-                    console.log('Game over - Midnight reached');
+                if (!isGameOver && (hours === 0 || hours >= 1)) {
+                    console.log('Game over - Time has reached or passed midnight');
                     showGameOver();
-                    return;
-                }
-                
-                // Also end game if time has gone past midnight
-                if (hours >= 1) {
-                    console.log('Game over - Past midnight');
-                    showGameOver();
-                    return;
                 }
             }
         }
 
         function showGameOver() {
             console.log('Game Over - Time has run out');
+            isGameOver = true;  // Set game over flag
             const modal = document.getElementById('gameOverModal');
             const finalMoneySpan = document.getElementById('final-money');
             
@@ -1414,6 +1424,7 @@
             console.log('Restarting game...');
             
             // Reset game state
+            isGameOver = false;  // Reset game over flag
             money = 1000;
             inventory = {};
             itemCosts = {};
