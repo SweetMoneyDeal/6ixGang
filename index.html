@@ -1324,7 +1324,13 @@
             inventory = {};
             currentTime = new Date();
             currentTime.setHours(22, 0, 0); // 10:00 PM
-            lastVisitedStation = null;
+            lastVisitedStation = 'Yonge'; // Set to Yonge instead of null
+            
+            // Generate new prices for all stations
+            stationPrices = {};
+            stationOrder.forEach(station => {
+                stationPrices[station] = generateStationPrices();
+            });
             
             // Update displays
             updateTimeDisplay();
@@ -1345,17 +1351,31 @@
                 behavior: 'smooth'
             });
             
-            // Reset station scroll position
+            // Reset station scroll position and center Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            if (scrollContainer) {
+            const yongeButton = document.querySelector('.station-button[onclick*="Yonge"]');
+            if (scrollContainer && yongeButton) {
+                const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
-                    left: 0,
+                    left: scrollOffset,
                     behavior: 'smooth'
                 });
             }
             
-            // Close modal
-            closeGameOverModal();
+            // Close all modals
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+            
+            console.log('Game restarted successfully');
+        }
+
+        function closeGameOverModal() {
+            console.log('Closing game over modal');
+            const gameOverModal = document.getElementById('gameOverModal');
+            if (gameOverModal) {
+                gameOverModal.style.display = 'none';
+            }
         }
 
         // Add splash screen handling at the top of the script
