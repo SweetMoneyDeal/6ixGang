@@ -1033,13 +1033,30 @@
             // Update station after time calculation
             lastVisitedStation = station;
             
-            // Update button states
+            // Update button states and center the selected station
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            const selectedButton = Array.from(document.querySelectorAll('.station-button')).find(btn => btn.textContent === station);
+            
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
                 if (btn.textContent === station) {
                     btn.classList.add('selected');
                 }
             });
+
+            // Center the selected station with smooth scrolling
+            if (selectedButton && scrollContainer) {
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const buttonRect = selectedButton.getBoundingClientRect();
+                
+                const scrollOffset = buttonRect.left - containerRect.left - 
+                                   (containerRect.width / 2) + (buttonRect.width / 2);
+                
+                scrollContainer.scrollBy({
+                    left: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
             
             updateMenu(station);
             updateInventoryDisplay();
@@ -1280,12 +1297,14 @@
             let isDown = false;
             let startX;
             let scrollLeft;
+            let isScrolling = false;
 
             scrollContainer.addEventListener('mousedown', (e) => {
                 isDown = true;
                 scrollContainer.style.cursor = 'grabbing';
                 startX = e.pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
+                isScrolling = false;
             });
 
             scrollContainer.addEventListener('mouseleave', () => {
@@ -1301,6 +1320,7 @@
             scrollContainer.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
+                isScrolling = true;
                 const x = e.pageX - scrollContainer.offsetLeft;
                 const walk = (x - startX);
                 scrollContainer.scrollLeft = scrollLeft - walk;
@@ -1311,6 +1331,7 @@
                 isDown = true;
                 startX = e.touches[0].pageX - scrollContainer.offsetLeft;
                 scrollLeft = scrollContainer.scrollLeft;
+                isScrolling = false;
             });
 
             scrollContainer.addEventListener('touchend', () => {
@@ -1319,6 +1340,7 @@
 
             scrollContainer.addEventListener('touchmove', (e) => {
                 if (!isDown) return;
+                isScrolling = true;
                 const x = e.touches[0].pageX - scrollContainer.offsetLeft;
                 const walk = (x - startX);
                 scrollContainer.scrollLeft = scrollLeft - walk;
@@ -1327,8 +1349,11 @@
             // Add click handlers to station buttons
             document.querySelectorAll('.station-button').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const station = e.target.textContent;
-                    selectStation(station);
+                    if (!isScrolling) {
+                        const station = e.target.textContent;
+                        selectStation(station);
+                    }
+                    isScrolling = false;
                 });
             });
         });
