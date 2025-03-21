@@ -720,7 +720,7 @@
             }
         }
 
-        #gameOverModal {
+        #gameOverModal, #highScoreModal {
             display: none;
             position: fixed;
             top: 0;
@@ -734,7 +734,7 @@
             justify-content: center;
         }
 
-        #gameOverModal .modal-content {
+        #gameOverModal .modal-content, #highScoreModal .modal-content {
             height: 600px;
             display: flex;
             flex-direction: column;
@@ -745,6 +745,73 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #highScoreModal .modal-content {
+            height: auto;
+            min-height: 300px;
+            max-height: 600px;
+            gap: 20px;
+        }
+
+        #highScoreModal .modal-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        #highScoreModal p {
+            font-size: 18px;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        #highScoreModal .modal-input {
+            font-size: 18px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 10px 0;
+        }
+
+        #highScoreModal .modal-buttons {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            #gameOverModal .modal-content, #highScoreModal .modal-content {
+                height: 80vh;
+                max-height: 600px;
+                width: 90%;
+                max-width: 400px;
+                padding: 20px;
+            }
+
+            #highScoreModal .modal-content {
+                height: auto;
+                min-height: 300px;
+                max-height: 80vh;
+            }
+
+            #highScoreModal .modal-title {
+                font-size: 28px;
+            }
+
+            #highScoreModal p {
+                font-size: 16px;
+            }
+
+            #highScoreModal .modal-input {
+                font-size: 16px;
+                padding: 10px;
+            }
         }
 
         #gameOverModal .high-scores {
@@ -776,16 +843,6 @@
 
         #gameOverModal .high-scores::-webkit-scrollbar-thumb:hover {
             background: #555;
-        }
-
-        @media (max-width: 768px) {
-            #gameOverModal .modal-content {
-                height: 80vh;
-                max-height: 600px;
-                width: 90%;
-                max-width: 400px;
-                padding: 20px;
-            }
         }
     </style>
 </head>
@@ -864,17 +921,7 @@
             </div>
         </div>
 
-        <!-- Add sell modal HTML -->
-        <div id="sellModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-title">How many units would you like to sell?</div>
-                <input type="number" id="sellQuantityInput" class="modal-input" min="1" value="1">
-                <div class="modal-buttons">
-                    <button class="modal-button cancel" onclick="closeSellModal()">Cancel</button>
-                    <button class="modal-button confirm" onclick="confirmSell()">Sell</button>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Add this new modal for viewing high scores -->
         <div id="viewHighScoresModal" class="modal" style="display: none;">
