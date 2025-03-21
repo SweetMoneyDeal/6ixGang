@@ -38,8 +38,6 @@
             width: 100vw;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
             padding: 10px 0;
             margin: 0 -10px;
             cursor: grab;
@@ -61,7 +59,6 @@
             padding: 0 calc(50vw - 60px);
             min-width: max-content;
             position: relative;
-            scroll-snap-align: center;
         }
         .stations-wrapper::before,
         .stations-wrapper::after {
@@ -1033,30 +1030,13 @@
             // Update station after time calculation
             lastVisitedStation = station;
             
-            // Update button states and center the selected station
-            const scrollContainer = document.querySelector('.stations-scroll-container');
-            const selectedButton = Array.from(document.querySelectorAll('.station-button')).find(btn => btn.textContent === station);
-            
+            // Update button states
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
                 if (btn.textContent === station) {
                     btn.classList.add('selected');
                 }
             });
-
-            // Center the selected station with smooth scrolling
-            if (selectedButton && scrollContainer) {
-                const containerRect = scrollContainer.getBoundingClientRect();
-                const buttonRect = selectedButton.getBoundingClientRect();
-                
-                const scrollOffset = buttonRect.left - containerRect.left - 
-                                   (containerRect.width / 2) + (buttonRect.width / 2);
-                
-                scrollContainer.scrollBy({
-                    left: scrollOffset,
-                    behavior: 'smooth'
-                });
-            }
             
             updateMenu(station);
             updateInventoryDisplay();
