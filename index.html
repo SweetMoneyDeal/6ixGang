@@ -1032,13 +1032,29 @@
             // Update station after time calculation
             lastVisitedStation = station;
             
-            // Update button states
+            // Update button states and center the selected station
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            const selectedButton = Array.from(document.querySelectorAll('.station-button')).find(btn => btn.textContent === station);
+            
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
                 if (btn.textContent === station) {
                     btn.classList.add('selected');
                 }
             });
+
+            if (selectedButton && scrollContainer) {
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const buttonRect = selectedButton.getBoundingClientRect();
+                
+                const scrollOffset = buttonRect.left - containerRect.left - 
+                                   (containerRect.width / 2) + (buttonRect.width / 2);
+                
+                scrollContainer.scrollBy({
+                    left: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
             
             updateMenu(station);
             updateInventoryDisplay();
