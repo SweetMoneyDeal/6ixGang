@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>6ixGang</title>
     <style>
         body {
@@ -13,10 +13,16 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
+            padding: 0;
             background-color: #f0f0f0;
+            box-sizing: border-box;
         }
         .container {
             text-align: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 10px;
+            box-sizing: border-box;
         }
         .station-button {
             padding: 15px 30px;
@@ -359,40 +365,95 @@
                 box-sizing: border-box;
             }
             
+            .boxes-container {
+                width: 100%;
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+            }
+            
             .box {
                 width: 90%;
-                max-width: 90%;
-                padding: 10px;
+                max-width: none;
+                min-height: auto;
                 margin: 5px auto;
+                padding: 15px 10px;
+                box-sizing: border-box;
+            }
+            
+            #menu-list {
+                width: 100%;
+                padding: 0;
+            }
+            
+            .menu-item {
+                padding: 10px;
+                margin: 8px 0;
             }
             
             .item-name {
-                font-size: 24px;
+                font-size: 20px;
             }
             
             .buy-price, .sell-price {
-                font-size: 17px;
+                font-size: 16px;
             }
             
             .action-button {
-                font-size: 16px;
-                padding: 6px;
-                min-width: 90px;
-                height: 36px;
+                font-size: 14px;
+                padding: 8px;
+                min-width: 80px;
+                height: 32px;
             }
             
             .money-display {
-                font-size: 22px;
+                font-size: 20px;
+                margin: 15px 0;
+            }
+            
+            .money-display img {
+                width: 60px;
             }
             
             h3 {
-                font-size: 22px;
+                font-size: 20px;
+                margin-bottom: 10px;
             }
 
-            .boxes-container {
-                width: 100%;
-                padding: 0 10px;
-                box-sizing: border-box;
+            .station-button {
+                padding: 12px 20px;
+                font-size: 16px;
+                width: 100px;
+            }
+
+            #buttons {
+                padding: 5px 0;
+                margin: 10px -5px;
+            }
+        }
+        /* Additional styles for very small screens */
+        @media (max-width: 380px) {
+            .box {
+                width: 95%;
+                padding: 10px 5px;
+            }
+            
+            .item-name {
+                font-size: 18px;
+            }
+            
+            .action-button {
+                font-size: 12px;
+                min-width: 70px;
+                height: 30px;
+            }
+            
+            .money-display {
+                font-size: 18px;
+            }
+            
+            .money-display img {
+                width: 50px;
             }
         }
         #buttons {
