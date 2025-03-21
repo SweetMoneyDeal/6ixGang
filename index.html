@@ -707,7 +707,7 @@
         </div>
 
         <!-- Add game over modal HTML -->
-        <div id="gameOverModal" class="modal">
+        <div id="gameOverModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-title">Game Over!</div>
                 <p>The clock struck midnight!<br>Your day is done. Try again tomorrow!</p>
@@ -725,7 +725,7 @@
         </div>
 
         <!-- Add high score name modal HTML -->
-        <div id="highScoreModal" class="modal">
+        <div id="highScoreModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-title">New High Score!</div>
                 <p>Congratulations! You've made it to the top 10!</p>
@@ -738,7 +738,7 @@
         </div>
 
         <!-- Add this new modal for viewing high scores -->
-        <div id="viewHighScoresModal" class="modal">
+        <div id="viewHighScoresModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-title">High Scores</div>
                 <div class="high-scores">
@@ -1275,6 +1275,11 @@
             console.log('Loading splash screen...');
             const splashScreen = document.getElementById('splash-screen');
             const mainContent = document.querySelector('.main-content');
+            
+            // Hide all modals initially
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
 
             // Show splash screen for 2 seconds
             setTimeout(() => {
