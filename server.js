@@ -30,10 +30,25 @@ const highScoresPath = path.join(__dirname, 'highscores.json');
 // Load high scores from file
 async function loadHighScores() {
     try {
+        // Check if file exists
+        try {
+            await fs.access(highScoresPath);
+        } catch (error) {
+            // If file doesn't exist, create it with empty array
+            console.log('Creating new high scores file');
+            await fs.writeFile(highScoresPath, '[]', { mode: 0o666 });
+        }
+
         const data = await fs.readFile(highScoresPath, 'utf8');
-        return JSON.parse(data);
+        try {
+            return JSON.parse(data);
+        } catch (error) {
+            console.error('Error parsing high scores file, resetting to empty array:', error);
+            await fs.writeFile(highScoresPath, '[]', { mode: 0o666 });
+            return [];
+        }
     } catch (error) {
-        console.log('No existing high scores file, starting with empty array');
+        console.error('Error loading high scores:', error);
         return [];
     }
 }
@@ -41,9 +56,14 @@ async function loadHighScores() {
 // Save high scores to file
 async function saveHighScores(scores) {
     try {
-        await fs.writeFile(highScoresPath, JSON.stringify(scores, null, 2));
+        await fs.writeFile(highScoresPath, JSON.stringify(scores, null, 2), { 
+            mode: 0o666, // Set file permissions to be readable/writable
+            flag: 'w' // Create file if it doesn't exist
+        });
+        console.log('High scores saved successfully');
     } catch (error) {
         console.error('Error saving high scores:', error);
+        throw error; // Re-throw to handle in the route
     }
 }
 
@@ -52,6 +72,8 @@ let highScores = [];
 loadHighScores().then(scores => {
     highScores = scores;
     console.log('High scores loaded:', highScores);
+}).catch(error => {
+    console.error('Error initializing high scores:', error);
 });
 
 // Serve static files from the current directory
@@ -67,6 +89,8 @@ app.get('/', (req, res) => {
 // API Routes
 app.get('/api/highscores', async (req, res) => {
     try {
+        // Reload from file to ensure we have latest data
+        highScores = await loadHighScores();
         const topScores = highScores
             .sort((a, b) => b.score - a.score)
             .slice(0, 10);
@@ -84,6 +108,9 @@ app.post('/api/highscores', async (req, res) => {
         if (!name || typeof score !== 'number') {
             return res.status(400).json({ error: 'Invalid score data' });
         }
+        
+        // Reload current scores from file
+        highScores = await loadHighScores();
         
         const newScore = { 
             name: name.slice(0, 20), // Limit name length
@@ -111,8 +138,8 @@ app.post('/api/highscores', async (req, res) => {
 
 // Basic error handling
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start the server
