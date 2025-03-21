@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
     <title>6ixGang</title>
     <style>
         body {
@@ -1279,14 +1279,24 @@
                 const displayHours = hours % 12 || 12;
                 const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
                 console.log('New time string:', timeString);
+                console.log('Current hours:', hours, 'minutes:', minutes);
                 timeDisplay.textContent = timeString;
                 
                 timeDisplay.classList.add('flash');
                 setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
                 
-                if (hours === 0 || (hours === 1 && minutes > 0)) {
-                    console.log('Game over condition met');
+                // Check if time has reached or passed midnight (00:00)
+                if (hours === 0 && minutes >= 0) {
+                    console.log('Game over - Midnight reached');
                     showGameOver();
+                    return;
+                }
+                
+                // Also end game if time has gone past midnight
+                if (hours >= 1) {
+                    console.log('Game over - Past midnight');
+                    showGameOver();
+                    return;
                 }
             }
         }
@@ -1406,14 +1416,20 @@
             // Reset game state
             money = 1000;
             inventory = {};
+            itemCosts = {};
             currentTime = new Date();
             currentTime.setHours(22, 0, 0); // 10:00 PM
             lastVisitedStation = 'Yonge';
             
             // Generate new prices for all stations
-            stationPrices = {};
-            stationOrder.forEach(station => {
+            Object.keys(stationPrices).forEach(station => {
                 stationPrices[station] = generateStationPrices();
+            });
+            
+            // Close all modals by removing 'visible' class
+            document.querySelectorAll('.modal').forEach(modal => {
+                console.log('Removing visible class from modal:', modal.id);
+                modal.classList.remove('visible');
             });
             
             // Update displays
@@ -1429,13 +1445,7 @@
                 }
             });
             
-            // Scroll to top of page
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-            
-            // Reset station scroll position and center Yonge station
+            // Scroll to Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
             const yongeButton = document.querySelector('.station-button[onclick*="Yonge"]');
             if (scrollContainer && yongeButton) {
@@ -1444,18 +1454,6 @@
                     left: scrollOffset,
                     behavior: 'smooth'
                 });
-            }
-            
-            // Close all modals
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.remove('visible');
-                console.log('Closing modal:', modal.id);
-            });
-            
-            // Show main content
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.style.display = 'block';
             }
             
             console.log('Game restarted successfully');
