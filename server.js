@@ -30,25 +30,32 @@ const highScoresPath = path.join(__dirname, 'highscores.json');
 // Load high scores from file
 async function loadHighScores() {
     try {
+        console.log('🔄 Attempting to load high scores from:', highScoresPath);
         // Check if file exists
         try {
             await fs.access(highScoresPath);
+            console.log('✅ High scores file exists');
         } catch (error) {
             // If file doesn't exist, create it with empty array
-            console.log('Creating new high scores file');
+            console.log('📝 Creating new high scores file with empty array');
             await fs.writeFile(highScoresPath, '[]', { mode: 0o666 });
+            console.log('✅ New high scores file created successfully');
         }
 
         const data = await fs.readFile(highScoresPath, 'utf8');
+        console.log('📖 Raw file contents:', data);
         try {
-            return JSON.parse(data);
+            const parsedData = JSON.parse(data);
+            console.log('✅ Successfully parsed high scores:', parsedData);
+            return parsedData;
         } catch (error) {
-            console.error('Error parsing high scores file, resetting to empty array:', error);
+            console.error('❌ Error parsing high scores file:', error);
+            console.log('🔄 Resetting to empty array');
             await fs.writeFile(highScoresPath, '[]', { mode: 0o666 });
             return [];
         }
     } catch (error) {
-        console.error('Error loading high scores:', error);
+        console.error('❌ Error in loadHighScores:', error);
         return [];
     }
 }
@@ -56,18 +63,39 @@ async function loadHighScores() {
 // Save high scores to file
 async function saveHighScores(scores) {
     try {
-        console.log('Attempting to save high scores:', scores);
-        await fs.writeFile(highScoresPath, JSON.stringify(scores, null, 2), { 
+        console.log('💾 Attempting to save high scores:', scores);
+        
+        // Validate scores before saving
+        if (!Array.isArray(scores)) {
+            throw new Error('Scores must be an array');
+        }
+        
+        // Format the JSON with indentation for readability
+        const jsonData = JSON.stringify(scores, null, 2);
+        console.log('📝 Formatted data to save:', jsonData);
+        
+        await fs.writeFile(highScoresPath, jsonData, { 
             mode: 0o666, // Set file permissions to be readable/writable
             flag: 'w' // Create file if it doesn't exist
         });
-        console.log('High scores saved successfully to:', highScoresPath);
+        console.log('✅ High scores saved successfully to:', highScoresPath);
         
         // Verify the save by reading back
         const savedData = await fs.readFile(highScoresPath, 'utf8');
-        console.log('Verified saved data:', savedData);
+        console.log('🔍 Verifying saved data:', savedData);
+        
+        // Parse the saved data to ensure it's valid JSON
+        const parsedData = JSON.parse(savedData);
+        console.log('✅ Verification complete - data is valid JSON');
+        
+        // Compare lengths to ensure all data was saved
+        if (parsedData.length !== scores.length) {
+            console.warn('⚠️ Warning: Saved data length differs from input length');
+        }
+        
+        return true;
     } catch (error) {
-        console.error('Error saving high scores:', error);
+        console.error('❌ Error in saveHighScores:', error);
         throw error; // Re-throw to handle in the route
     }
 }
@@ -110,18 +138,18 @@ app.get('/api/highscores', async (req, res) => {
 
 app.post('/api/highscores', async (req, res) => {
     try {
-        console.log('Received new high score request:', req.body);
+        console.log('📥 Received new high score request:', req.body);
         const { name, score } = req.body;
         
         if (!name || typeof score !== 'number') {
-            console.error('Invalid score data received:', { name, score });
+            console.error('❌ Invalid score data received:', { name, score });
             return res.status(400).json({ error: 'Invalid score data' });
         }
         
         // Reload current scores from file
-        console.log('Loading existing scores...');
+        console.log('🔄 Loading existing scores...');
         highScores = await loadHighScores();
-        console.log('Current high scores:', highScores);
+        console.log('📊 Current high scores:', highScores);
         
         const newScore = { 
             name: name.slice(0, 20), // Limit name length
@@ -129,7 +157,7 @@ app.post('/api/highscores', async (req, res) => {
             date: new Date().toISOString() 
         };
         
-        console.log('Adding new score:', newScore);
+        console.log('➕ Adding new score:', newScore);
         highScores.push(newScore);
         
         // Sort and get top 10 scores
@@ -137,14 +165,17 @@ app.post('/api/highscores', async (req, res) => {
             .sort((a, b) => b.score - a.score)
             .slice(0, 10);
         
+        console.log('🏆 Top 10 scores after sorting:', topScores);
+        
         // Update the stored high scores
-        console.log('Saving updated high scores:', topScores);
+        console.log('💾 Saving updated high scores...');
         highScores = topScores;
         await saveHighScores(highScores);
         
+        console.log('✅ High score saved and response ready');
         res.json(topScores);
     } catch (error) {
-        console.error('Error saving high score:', error);
+        console.error('❌ Error in POST /api/highscores:', error);
         res.status(500).json({ error: 'Failed to save score' });
     }
 });
