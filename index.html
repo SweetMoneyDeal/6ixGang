@@ -1308,18 +1308,10 @@
             
             const moneyDisplay = document.getElementById('menu-money-display');
             if (moneyDisplay) {
-                moneyDisplay.textContent = `Cash: $${formatMoney(money)}`;
+                moneyDisplay.textContent = `$${formatMoney(money)}`;
             }
             
-            // Fetch and display initial high scores
-            try {
-                const response = await fetch('/api/highscores');
-                const scores = await response.json();
-                updateHighScoresDisplay(scores);
-            } catch (error) {
-                console.error('Error fetching initial high scores:', error);
-            }
-            
+            // Initialize game state without showing high scores
             updateMenu('Kipling');
             updateInventoryDisplay();
             updateTimeDisplay();
