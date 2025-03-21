@@ -1461,7 +1461,6 @@
 
         function restartGame() {
             console.log('Restarting game...');
-            
             // Reset game state
             isGameOver = false;  // Reset game over flag
             money = 1000;
@@ -1507,12 +1506,6 @@
                 });
             }
             
-            // Scroll page to top
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-            
             console.log('Game restarted successfully');
         }
 
@@ -1550,7 +1543,7 @@
                 highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
                 viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
             });
-
+            
             // Show splash screen for 2 seconds
             setTimeout(() => {
                 console.log('=== Splash Screen Fade Out ===');
