@@ -10,12 +10,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
             padding: 0;
             background-color: #f0f0f0;
             box-sizing: border-box;
+            overflow-x: hidden;
         }
         .container {
             text-align: center;
@@ -23,17 +24,63 @@
             max-width: 1200px;
             padding: 10px;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .stations-scroll-container {
+            width: 100vw;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            padding: 10px 0;
+            margin: 0 -10px;
+            cursor: grab;
+            position: relative;
+        }
+        .stations-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        .stations-scroll-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .stations-wrapper {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+            min-width: max-content;
+            position: relative;
+        }
+        .stations-wrapper::before,
+        .stations-wrapper::after {
+            content: '';
+            width: 20px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .stations-wrapper::before {
+            left: 0;
+            background: linear-gradient(to right, rgba(240, 240, 240, 0.9), transparent);
+        }
+        .stations-wrapper::after {
+            right: 0;
+            background: linear-gradient(to left, rgba(240, 240, 240, 0.9), transparent);
         }
         .station-button {
             padding: 15px 30px;
-            margin: 10px;
+            margin: 0;
             font-size: 18px;
             background-color: #808080;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
             width: 120px;
             text-align: center;
             display: inline-flex;
@@ -41,13 +88,20 @@
             align-items: center;
             flex: 0 0 auto;
             scroll-snap-align: center;
+            white-space: nowrap;
+            transform: scale(0.95);
+            opacity: 0.8;
         }
         .station-button:hover {
             background-color: #666666;
+            transform: scale(1);
+            opacity: 0.9;
         }
         .station-button.selected {
             background-color: #ff0000;
-            cursor: default;
+            transform: scale(1);
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
         }
         .station-button.selected:hover {
             background-color: #ff0000;
@@ -430,6 +484,15 @@
                 padding: 5px 0;
                 margin: 10px -5px;
             }
+
+            .stations-scroll-container {
+                padding: 5px 0;
+            }
+            
+            .stations-wrapper {
+                gap: 8px;
+                padding: 0 15px;
+            }
         }
         /* Additional styles for very small screens */
         @media (max-width: 380px) {
@@ -533,18 +596,15 @@
         <div class="container">
             <h1>6ixGang</h1>
             <div class="time-display" id="time-display">10:00 PM</div>
-            <div id="buttons">
-                <button class="station-button" onclick="handleStationClick('Kipling', this)">Kipling</button>
-                <button class="station-button" onclick="handleStationClick('Jane', this)">Jane</button>
-                <button class="station-button" onclick="handleStationClick('Keele', this)">Keele</button>
-                <button class="station-button" onclick="handleStationClick('Dufferin', this)">Dufferin</button>
-                <button class="station-button" onclick="handleStationClick('Spadina', this)">Spadina</button>
-                <button class="station-button" onclick="handleStationClick('Yonge', this)">Yonge</button>
-                <button class="station-button" onclick="handleStationClick('Sherbourne', this)">Sherbourne</button>
-                <button class="station-button" onclick="handleStationClick('Pape', this)">Pape</button>
-                <button class="station-button" onclick="handleStationClick('Main', this)">Main</button>
-                <button class="station-button" onclick="handleStationClick('Warden', this)">Warden</button>
-                <button class="station-button" onclick="handleStationClick('Kennedy', this)">Kennedy</button>
+            <div class="stations-scroll-container">
+                <div class="stations-wrapper">
+                    <button class="station-button selected" onclick="selectStation('Scarborough')">Scarborough</button>
+                    <button class="station-button" onclick="selectStation('Vaughan')">Vaughan</button>
+                    <button class="station-button" onclick="selectStation('Downtown')">Downtown</button>
+                    <button class="station-button" onclick="selectStation('Mississauga')">Mississauga</button>
+                    <button class="station-button" onclick="selectStation('Brampton')">Brampton</button>
+                    <button class="station-button" onclick="selectStation('Markham')">Markham</button>
+                </div>
             </div>
             
             <div class="boxes-container">
@@ -917,11 +977,8 @@
             closeSellModal();
         }
 
-        function handleStationClick(station, button) {
-            console.log('Station clicked:', {
-                station,
-                previousStation: lastVisitedStation
-            });
+        function selectStation(station) {
+            console.log('Station selected:', station);
             
             // Calculate minutes before updating lastVisitedStation
             const minutesToAdd = calculateMinutesForStationChange(lastVisitedStation, station);
@@ -936,10 +993,13 @@
             // Update station after time calculation
             lastVisitedStation = station;
             
+            // Update button states
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
+                if (btn.textContent === station) {
+                    btn.classList.add('selected');
+                }
             });
-            button.classList.add('selected');
             
             updateMenu(station);
             updateInventoryDisplay();
@@ -1191,6 +1251,58 @@
             if (event.target === gameOverModal) restartGame();
             if (event.target === viewHighScoresModal) closeHighScoresModal();
         };
+
+        // Add touch scroll functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            scrollContainer.addEventListener('mousedown', (e) => {
+                isDown = true;
+                scrollContainer.style.cursor = 'grabbing';
+                startX = e.pageX - scrollContainer.offsetLeft;
+                scrollLeft = scrollContainer.scrollLeft;
+            });
+
+            scrollContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+            });
+
+            scrollContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+            });
+
+            scrollContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - scrollContainer.offsetLeft;
+                const walk = (x - startX) * 2;
+                scrollContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            // Add touch events for mobile
+            scrollContainer.addEventListener('touchstart', (e) => {
+                isDown = true;
+                startX = e.touches[0].pageX - scrollContainer.offsetLeft;
+                scrollLeft = scrollContainer.scrollLeft;
+            });
+
+            scrollContainer.addEventListener('touchend', () => {
+                isDown = false;
+            });
+
+            scrollContainer.addEventListener('touchmove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.touches[0].pageX - scrollContainer.offsetLeft;
+                const walk = (x - startX) * 2;
+                scrollContainer.scrollLeft = scrollLeft - walk;
+            });
+        });
     </script>
 </body>
 </html>
