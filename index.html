@@ -122,22 +122,19 @@
         }
         .boxes-container {
             display: flex;
-            justify-content: center;
-            margin-top: 30px;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
         .box {
-            width: 90%;
-            max-width: 400px;
-            height: auto;
-            min-height: 600px;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 10px auto;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            box-sizing: border-box;
         }
         .box h3 {
             margin: 0 0 15px 0;
@@ -843,16 +840,6 @@
                         <!-- Menu items will be dynamically populated -->
                     </div>
                 </div>
-                <div class="box">
-                    <div class="money-display">
-                        <img src="Cash.png" alt="Cash">
-                        <span id="inventory-money">$1000</span>
-                    </div>
-                    <h3>Inventory</h3>
-                    <div id="inventory-stats">
-                        <!-- Inventory items will be dynamically populated -->
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -999,42 +986,8 @@
         }
 
         function updateInventoryDisplay() {
-            console.log('Updating inventory display with current station:', lastVisitedStation);
-            
-            const inventoryStats = document.getElementById('inventory-stats');
-            const inventoryMoney = document.getElementById('inventory-money');
-            
-            if (!inventoryStats || !inventoryMoney) {
-                console.error('Could not find inventory elements');
-                return;
-            }
-            
-            inventoryMoney.textContent = `Money: $${formatMoney(money)}`;
-            inventoryStats.innerHTML = '';
-            
-            console.log('Current inventory:', inventory);
-            
-            Object.entries(inventory).forEach(([item, quantity]) => {
-                if (quantity > 0 && stationPrices[lastVisitedStation] && stationPrices[lastVisitedStation][item]) {
-                    const totalCost = itemCosts[item] || 0;
-                    const averagePrice = Math.round(totalCost / quantity);
-                    const sellPrice = stationPrices[lastVisitedStation][item].price;
-                    
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'inventory-item';
-                    itemDiv.innerHTML = `
-                        <div style="flex: 1;">
-                            <span class="item-name">${item}</span>
-                            <span style="color: #666; margin-left: 10px;">Avg: $${formatMoney(averagePrice)}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="color: #666;">Total: ${quantity}</span>
-                            <button class="action-button sell" onclick="handleSell('${item}', ${sellPrice})">Sell</button>
-                        </div>
-                    `;
-                    inventoryStats.appendChild(itemDiv);
-                }
-            });
+            console.log('Updating money display:', money);
+            updateMoneyDisplay();
         }
 
         function handleBuy(item, price) {
@@ -1624,17 +1577,9 @@
 
         function updateMoneyDisplay() {
             console.log('Updating money display:', money);
-            
-            // Update money display in menu box
             const menuMoneyDisplay = document.getElementById('menu-money-display');
             if (menuMoneyDisplay) {
                 menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
-            }
-            
-            // Update money display in inventory box
-            const inventoryMoney = document.getElementById('inventory-money');
-            if (inventoryMoney) {
-                inventoryMoney.textContent = `$${formatMoney(money)}`;
             }
         }
     </script>
