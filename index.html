@@ -691,6 +691,35 @@
         .main-content {
             display: none;
         }
+        .final-score-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .final-score-container img {
+            width: 40px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .final-score-container #final-money {
+            font-size: 24px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .final-score-container img {
+                width: 30px;
+            }
+            
+            .final-score-container #final-money {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -751,7 +780,10 @@
             <div class="modal-content">
                 <div class="modal-title">Game Over!</div>
                 <p>The clock struck midnight!<br>Your day is done. Try again tomorrow!</p>
-                <p><span id="final-money" style="color: #4CAF50; font-weight: bold;">Final Money: $0</span></p>
+                <div class="final-score-container">
+                    <img src="Cash.png" alt="Cash">
+                    <span id="final-money">Final Money: $0</span>
+                </div>
                 <div class="high-scores">
                     <h3>Top 10 High Scores</h3>
                     <div id="high-scores-list">
