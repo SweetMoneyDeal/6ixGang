@@ -1121,6 +1121,11 @@
             }
             console.log(`Updating menu for station: ${station}`);
             const menuList = document.getElementById('menu-list');
+            
+            // Store the current scroll position
+            const scrollPosition = menuList.scrollTop;
+            
+            // Update the menu content
             menuList.innerHTML = '';
             
             // Add debug logging for heights
@@ -1171,6 +1176,9 @@
                 `;
                 menuList.appendChild(menuItem);
             });
+            
+            // Restore the scroll position after updating content
+            menuList.scrollTop = scrollPosition;
         }
 
         function updateMoneyDisplayInMenu() {
