@@ -1383,6 +1383,7 @@
             }
             
             try {
+                console.log('Sending high score:', { name: playerName, score: money });
                 const response = await fetch('/api/highscores', {
                     method: 'POST',
                     headers: {
@@ -1439,7 +1440,10 @@
                 return;
             }
             
-            scores.forEach((score, index) => {
+            // Sort scores in descending order
+            const sortedScores = [...scores].sort((a, b) => b.score - a.score);
+            
+            sortedScores.forEach((score, index) => {
                 const scoreItem = document.createElement('div');
                 scoreItem.className = 'high-score-item';
                 

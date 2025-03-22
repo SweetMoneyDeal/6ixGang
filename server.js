@@ -162,7 +162,7 @@ app.post('/api/highscores', async (req, res) => {
         
         // Sort and get top 10 scores
         const topScores = highScores
-            .sort((a, b) => b.score - a.score)
+            .sort((a, b) => b.score - a.score) // Sort by score in descending order
             .slice(0, 10);
         
         console.log('🏆 Top 10 scores after sorting:', topScores);
