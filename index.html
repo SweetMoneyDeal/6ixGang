@@ -271,19 +271,8 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-        .time-display {
+        .time-display, .time-display.flash {
             display: none;
-        }
-        .time-display.flash {
-            display: none;
-        }
-        @keyframes flashEffect {
-            0% { 
-                display: none;
-            }
-            100% {
-                display: none;
-            }
         }
         .modal {
             display: none;
@@ -881,7 +870,7 @@
                 <span id="final-money">Final Money: $0</span>
             </div>
             <div class="high-scores">
-                <h3>World Time All Time Top 10</h3>
+                <h3>All Time Top 10</h3>
                 <div id="high-scores-list">
                     <!-- High scores will be dynamically populated -->
                 </div>
