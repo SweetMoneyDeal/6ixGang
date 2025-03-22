@@ -928,6 +928,23 @@
     <!-- Wrap existing content in main-content div -->
     <div class="main-content">
         <div class="container">
+            <!-- Inventory box moved above stations -->
+            <div class="boxes-container">
+                <!-- Player inventory box -->
+                <div class="box">
+                    <div class="money-display">
+                        <div class="cash-container">
+                            <img src="Cash.png" alt="Cash">
+                            <span id="menu-money-display">$1000</span>
+                        </div>
+                        <div class="token-container">
+                            <img src="Coin.png" alt="Coin">
+                            <span id="token-display">24</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="stations-scroll-container">
                 <div class="stations-wrapper">
                     <button class="station-button" data-station="Kipling">Kipling</button>
@@ -944,22 +961,8 @@
                 </div>
             </div>
             
+            <!-- Menu box in its own container -->
             <div class="boxes-container">
-                <!-- New box with money display -->
-                <div class="box">
-                    <div class="money-display">
-                        <div class="cash-container">
-                            <img src="Cash.png" alt="Cash">
-                            <span id="menu-money-display">$1000</span>
-                        </div>
-                        <div class="token-container">
-                            <img src="Coin.png" alt="Coin">
-                            <span id="token-display">24</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Menu box without money display -->
                 <div class="box">
                     <h3>Menu</h3>
                     <div id="menu-list">
