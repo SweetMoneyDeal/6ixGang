@@ -46,6 +46,7 @@
             align-items: center;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
+            min-height: 0; /* Add this to allow flex child to shrink */
         }
         .game-title {
             font-family: 'Orbitron', sans-serif;
@@ -219,8 +220,8 @@
             width: 100%;
             box-sizing: border-box;
             overflow-y: auto;
-            max-height: calc(100vh - 300px); /* Adjust this value based on your needs */
-            padding-right: 10px; /* Add padding for scrollbar */
+            max-height: 60vh; /* Change to percentage of viewport height */
+            padding-right: 10px;
         }
         .menu-item {
             display: flex;
