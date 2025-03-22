@@ -42,6 +42,9 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: titlePulse 2s infinite;
+            display: block;  /* Ensure it's a block element */
+            width: auto;    /* Remove fixed width */
+            height: auto;   /* Remove fixed height */
         }
         @keyframes titlePulse {
             0% { transform: scale(1); }
