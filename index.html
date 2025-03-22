@@ -29,10 +29,24 @@
             gap: 20px;
         }
         .game-title {
-            width: 100px;
-            height: auto;
-            object-fit: contain;
-            margin: 0 auto;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            color: #000;
+            text-align: center;
+            margin: 20px auto;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            background: linear-gradient(45deg, #000, #333);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titlePulse 2s infinite;
+        }
+        @keyframes titlePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         .stations-scroll-container {
             width: 100vw;
@@ -852,7 +866,7 @@
 <body>
     <!-- Add splash screen -->
     <div id="splash-screen">
-        <img src="6ixGang.jpg" alt="6ixGang Logo">
+        <h1 class="game-title">6ixGang</h1>
     </div>
 
     <!-- Add game over modal HTML -->
@@ -860,7 +874,8 @@
         <div class="modal-content">
             <div class="modal-title">Game Over!</div>
             <div class="final-score-container">
-                <img src="Cash.png" alt="Cash">
+                <img src="Cash.png" alt="Cash" style="width: 30px; height: 30px;">
+                <img src="Coin.png" alt="Coin" style="width: 30px; height: 30px;">
                 <span id="final-money">Final Money: $0</span>
             </div>
             <div class="high-scores">
@@ -891,7 +906,7 @@
     <!-- Wrap existing content in main-content div -->
     <div class="main-content">
         <div class="container">
-            <img src="6ixGang.jpg" alt="6ixGang" class="game-title">
+            <h1 class="game-title">6ixGang</h1>
             <div class="time-display" id="time-display">10:00 PM</div>
             <div class="stations-scroll-container">
                 <div class="stations-wrapper">
@@ -912,7 +927,8 @@
             <div class="boxes-container">
                 <div class="box">
                     <div class="money-display">
-                        <img src="Cash.png" alt="Cash">
+                        <img src="Cash.png" alt="Cash" style="width: 30px; height: 30px;">
+                        <img src="Coin.png" alt="Coin" style="width: 30px; height: 30px;">
                         <span id="menu-money-display">$1000</span>
                     </div>
                     <h3>Menu</h3>
