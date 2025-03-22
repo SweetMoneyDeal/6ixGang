@@ -272,19 +272,18 @@
             margin-bottom: 10px;
         }
         .time-display {
-            font-size: 24px;
-            color: #333;
-            margin: 10px 0 20px 0;
-            font-weight: bold;
-            transition: color 0.3s ease;
+            display: none;
         }
         .time-display.flash {
-            color: #ff0000;
-            animation: flashEffect 1s ease;
+            display: none;
         }
         @keyframes flashEffect {
-            0% { color: #ff0000; }
-            100% { color: #333; }
+            0% { 
+                display: none;
+            }
+            100% {
+                display: none;
+            }
         }
         .modal {
             display: none;
@@ -910,7 +909,6 @@
     <div class="main-content">
         <div class="container">
             <h1 class="game-title">6ixGang</h1>
-            <div class="time-display" id="time-display">10:00 PM</div>
             <div class="stations-scroll-container">
                 <div class="stations-wrapper">
                     <button class="station-button" data-station="Kipling">Kipling</button>
@@ -972,9 +970,7 @@
         let itemBuyStations = {};
         let currentSellItem = null;
         let currentSellPrice = 0;
-        let currentTime = new Date();
         let isGameOver = false;  // Add game over flag
-        currentTime.setHours(22, 0, 0);
 
         // Define station order
         const stationOrder = ['Kipling', 'Jane', 'Keele', 'Dufferin', 'Spadina', 'Yonge', 
@@ -1242,52 +1238,12 @@
             closeSellModal();
         }
 
-        function calculateMinutesForStationChange(fromStation, toStation) {
-            console.log('Calculating minutes between stations:', fromStation, toStation);
-            
-            const stations = ['Kipling', 'Jane', 'Keele', 'Dufferin', 'Spadina', 'Yonge', 
-                            'Sherbourne', 'Pape', 'Main', 'Warden', 'Kennedy'];
-            
-            if (!fromStation || !toStation) {
-                console.log('First station visit or invalid station');
-                return 0;
-            }
-            
-            const fromIndex = stations.indexOf(fromStation);
-            const toIndex = stations.indexOf(toStation);
-            
-            if (fromIndex === -1 || toIndex === -1) {
-                console.log('Invalid station name');
-                return 0;
-            }
-            
-            const stationDifference = Math.abs(toIndex - fromIndex);
-            const minutesPerStation = 3;
-            const totalMinutes = stationDifference * minutesPerStation;
-            
-            console.log('Minutes to add:', totalMinutes);
-            return totalMinutes;
-        }
-
         function selectStation(stationName) {
             if (isGameOver) {
                 console.log('Game is over, cannot select stations');
                 return;
             }
             console.log(`Selecting station: ${stationName}`);
-            
-            // Calculate minutes before updating lastVisitedStation
-            const stationIndex = stationOrder.indexOf(stationName);
-            const lastStationIndex = stationOrder.indexOf(lastVisitedStation);
-            const stationDistance = Math.abs(stationIndex - lastStationIndex);
-            const minutesToAdd = stationDistance * 3;
-            
-            console.log('Time before update:', currentTime.toLocaleTimeString());
-            console.log('Minutes to add:', minutesToAdd);
-            
-            // Update time
-            currentTime = new Date(currentTime.getTime() + minutesToAdd * 60000);
-            console.log('Time after update:', currentTime.toLocaleTimeString());
             
             // Update last visited station
             lastVisitedStation = stationName;
@@ -1311,37 +1267,12 @@
                 });
             }
             
-            // Update displays
-            updateTimeDisplay();
+            // Update menu
             updateMenu(stationName);
         }
 
-        function updateTimeDisplay() {
-            console.log('Updating time display');
-            const timeDisplay = document.getElementById('time-display');
-            if (timeDisplay) {
-                const hours = currentTime.getHours();
-                const minutes = currentTime.getMinutes();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                const displayHours = hours % 12 || 12;
-                const timeString = `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                console.log('New time string:', timeString);
-                console.log('Current hours:', hours, 'minutes:', minutes);
-                timeDisplay.textContent = timeString;
-                
-                timeDisplay.classList.add('flash');
-                setTimeout(() => timeDisplay.classList.remove('flash'), 1000);
-                
-                // Only check for game over if we're not in initialization
-                if (!window.isInitializing && !isGameOver && hours === 0) {
-                    console.log('Game over - Time has reached midnight');
-                    showGameOver();
-                }
-            }
-        }
-
         function showGameOver() {
-            console.log('Game Over - Time has run out');
+            console.log('Game Over');
             isGameOver = true;  // Set game over flag
             const modal = document.getElementById('gameOverModal');
             const finalMoneySpan = document.getElementById('final-money');
@@ -1489,8 +1420,6 @@
             money = 1000;
             inventory = {};
             itemCosts = {};
-            currentTime = new Date();
-            currentTime.setHours(22, 0, 0); // 10:00 PM
             lastVisitedStation = 'Yonge';
             
             // Generate new prices for all stations
@@ -1506,7 +1435,6 @@
             });
             
             // Update displays
-            updateTimeDisplay();
             updateMoneyDisplayInMenu();
             updateMenu('Yonge'); // Reset to starting station
             
@@ -1610,10 +1538,6 @@
             itemCosts = {};
             isGameOver = false;
             
-            // Reset time to 10:00 PM
-            currentTime = new Date();
-            currentTime.setHours(22, 0, 0);
-            
             // Select Yonge station button
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
@@ -1630,7 +1554,6 @@
             // Initialize game state without showing high scores
             updateMenu('Yonge');
             updateMoneyDisplayInMenu();
-            updateTimeDisplay();
             
             // Scroll to Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
