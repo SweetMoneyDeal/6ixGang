@@ -17,16 +17,32 @@
             background-color: #f0f0f0;
             box-sizing: border-box;
             overflow-x: hidden;
+            overflow-y: hidden; /* Prevent body scroll */
         }
         .container {
             text-align: center;
             width: 100%;
             max-width: 1200px;
-            padding: 10px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* Prevent container scroll */
+        }
+        .stations-section {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f0f0f0;
+            padding: 10px 0;
+            width: 100%;
+        }
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 10px;
+            -webkit-overflow-scrolling: touch;
         }
         .game-title {
             font-family: 'Orbitron', sans-serif;
@@ -928,45 +944,50 @@
     <!-- Wrap existing content in main-content div -->
     <div class="main-content">
         <div class="container">
-            <!-- Inventory box moved above stations -->
-            <div class="boxes-container">
-                <!-- Player inventory box -->
-                <div class="box">
-                    <div class="money-display">
-                        <div class="cash-container">
-                            <img src="Cash.png" alt="Cash">
-                            <span id="menu-money-display">$1000</span>
-                        </div>
-                        <div class="token-container">
-                            <img src="Coin.png" alt="Coin">
-                            <span id="token-display">24</span>
-                        </div>
+            <!-- Fixed stations section -->
+            <div class="stations-section">
+                <div class="stations-scroll-container">
+                    <div class="stations-wrapper">
+                        <button class="station-button" data-station="Kipling">Kipling</button>
+                        <button class="station-button" data-station="Jane">Jane</button>
+                        <button class="station-button" data-station="Keele">Keele</button>
+                        <button class="station-button" data-station="Dufferin">Dufferin</button>
+                        <button class="station-button" data-station="Spadina">Spadina</button>
+                        <button class="station-button selected" data-station="Yonge">Yonge</button>
+                        <button class="station-button" data-station="Sherbourne">Sherbourne</button>
+                        <button class="station-button" data-station="Pape">Pape</button>
+                        <button class="station-button" data-station="Main">Main</button>
+                        <button class="station-button" data-station="Warden">Warden</button>
+                        <button class="station-button" data-station="Kennedy">Kennedy</button>
                     </div>
                 </div>
             </div>
 
-            <div class="stations-scroll-container">
-                <div class="stations-wrapper">
-                    <button class="station-button" data-station="Kipling">Kipling</button>
-                    <button class="station-button" data-station="Jane">Jane</button>
-                    <button class="station-button" data-station="Keele">Keele</button>
-                    <button class="station-button" data-station="Dufferin">Dufferin</button>
-                    <button class="station-button" data-station="Spadina">Spadina</button>
-                    <button class="station-button selected" data-station="Yonge">Yonge</button>
-                    <button class="station-button" data-station="Sherbourne">Sherbourne</button>
-                    <button class="station-button" data-station="Pape">Pape</button>
-                    <button class="station-button" data-station="Main">Main</button>
-                    <button class="station-button" data-station="Warden">Warden</button>
-                    <button class="station-button" data-station="Kennedy">Kennedy</button>
+            <!-- Scrollable content section -->
+            <div class="scrollable-content">
+                <!-- Inventory box -->
+                <div class="boxes-container">
+                    <div class="box">
+                        <div class="money-display">
+                            <div class="cash-container">
+                                <img src="Cash.png" alt="Cash">
+                                <span id="menu-money-display">$1000</span>
+                            </div>
+                            <div class="token-container">
+                                <img src="Coin.png" alt="Coin">
+                                <span id="token-display">24</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Menu box in its own container -->
-            <div class="boxes-container">
-                <div class="box">
-                    <h3>Menu</h3>
-                    <div id="menu-list">
-                        <!-- Menu items will be dynamically populated -->
+                
+                <!-- Menu box -->
+                <div class="boxes-container">
+                    <div class="box">
+                        <h3>Menu</h3>
+                        <div id="menu-list">
+                            <!-- Menu items will be dynamically populated -->
+                        </div>
                     </div>
                 </div>
             </div>
