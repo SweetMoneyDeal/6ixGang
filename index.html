@@ -171,9 +171,14 @@
             gap: 10px;
         }
         .money-display img {
-            width: 100px;
-            height: auto;
+            width: 30px;
+            height: 30px;
             object-fit: contain;
+        }
+        .money-display .cash-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .box p {
             margin: 0;
@@ -704,9 +709,15 @@
         }
 
         .final-score-container img {
-            width: 80px;
-            height: auto;
+            width: 30px;
+            height: 30px;
             object-fit: contain;
+        }
+
+        .final-score-container .cash-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .final-score-container #final-money {
@@ -865,9 +876,11 @@
         <div class="modal-content">
             <div class="modal-title">Game Over!</div>
             <div class="final-score-container">
-                <img src="Cash.png" alt="Cash" style="width: 30px; height: 30px;">
-                <img src="Coin.png" alt="Coin" style="width: 30px; height: 30px;">
-                <span id="final-money">Final Money: $0</span>
+                <div class="cash-container">
+                    <img src="Cash.png" alt="Cash">
+                    <span id="final-money">Final Money: $0</span>
+                </div>
+                <img src="Coin.png" alt="Coin">
             </div>
             <div class="high-scores">
                 <h3>All Time Top 10</h3>
@@ -917,9 +930,11 @@
             <div class="boxes-container">
                 <div class="box">
                     <div class="money-display">
-                        <img src="Cash.png" alt="Cash" style="width: 30px; height: 30px;">
-                        <img src="Coin.png" alt="Coin" style="width: 30px; height: 30px;">
-                        <span id="menu-money-display">$1000</span>
+                        <div class="cash-container">
+                            <img src="Cash.png" alt="Cash">
+                            <span id="menu-money-display">$1000</span>
+                        </div>
+                        <img src="Coin.png" alt="Coin">
                     </div>
                     <h3>Menu</h3>
                     <div id="menu-list">
