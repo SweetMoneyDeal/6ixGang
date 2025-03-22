@@ -180,6 +180,13 @@
             gap: 10px;
             justify-content: flex-start;
         }
+        .money-display .token-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-size: 20px;
+        }
         .box p {
             margin: 0;
             color: #666;
@@ -703,31 +710,39 @@
         .final-score-container {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             gap: 10px;
             margin: 15px 0;
             width: 100%;
         }
-
+        .final-score-container .cash-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        .final-score-container .token-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-size: 20px;
+        }
         .final-score-container img {
             width: 30px;
             height: 30px;
             object-fit: contain;
         }
-
-        .final-score-container .cash-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: flex-start;
-        }
-
         .final-score-container #final-money {
             font-size: 32px;
             color: #4CAF50;
             font-weight: bold;
         }
-
+        .final-score-container #final-tokens {
+            font-size: 32px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
         @media (max-width: 768px) {
             .final-score-container img {
                 width: 60px;
@@ -736,8 +751,10 @@
             .final-score-container #final-money {
                 font-size: 28px;
             }
+            .final-score-container #final-tokens {
+                font-size: 28px;
+            }
         }
-
         #gameOverModal, #highScoreModal {
             display: none;
             position: fixed;
@@ -882,7 +899,6 @@
                     <img src="Cash.png" alt="Cash">
                     <span id="final-money">Final Money: $0</span>
                 </div>
-                <img src="Coin.png" alt="Coin">
             </div>
             <div class="high-scores">
                 <h3>All Time Top 10</h3>
@@ -936,7 +952,10 @@
                             <img src="Cash.png" alt="Cash">
                             <span id="menu-money-display">$1000</span>
                         </div>
-                        <img src="Coin.png" alt="Coin">
+                        <div class="token-container">
+                            <img src="Coin.png" alt="Coin">
+                            <span id="token-display">24</span>
+                        </div>
                     </div>
                     <h3>Menu</h3>
                     <div id="menu-list">
@@ -969,6 +988,7 @@
         let selectedStations = [];
         let inventory = {};
         let money = 1000;
+        let tokens = 24;  // Starting tokens
         let highScores = [];
         let currentStation = null;
         let lastVisitedStation = 'Yonge';
@@ -1279,7 +1299,7 @@
 
         function showGameOver() {
             console.log('Game Over');
-            isGameOver = true;  // Set game over flag
+            isGameOver = true;
             const modal = document.getElementById('gameOverModal');
             const finalMoneySpan = document.getElementById('final-money');
             
@@ -1422,8 +1442,9 @@
         function restartGame() {
             console.log('Restarting game...');
             // Reset game state
-            isGameOver = false;  // Reset game over flag
+            isGameOver = false;
             money = 1000;
+            tokens = 24;  // Reset tokens
             inventory = {};
             itemCosts = {};
             lastVisitedStation = 'Yonge';
@@ -1433,7 +1454,7 @@
                 stationPrices[station] = generateStationPrices();
             });
             
-            // Close all modals by removing 'visible' class and setting display to none
+            // Close all modals
             document.querySelectorAll('.modal').forEach(modal => {
                 console.log('Closing modal:', modal.id);
                 modal.classList.remove('visible');
@@ -1442,7 +1463,8 @@
             
             // Update displays
             updateMoneyDisplayInMenu();
-            updateMenu('Yonge'); // Reset to starting station
+            updateTokenDisplay();  // Update token display
+            updateMenu('Yonge');
             
             // Reset station selection
             document.querySelectorAll('.station-button').forEach(btn => {
@@ -1454,7 +1476,7 @@
             
             // Scroll to Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            const yongeButton = document.querySelector('.station-button[data-station="Yonge"]');
+            const yongeButton = document.querySelector('.station-button.selected');
             if (scrollContainer && yongeButton) {
                 const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
@@ -1540,6 +1562,7 @@
             
             lastVisitedStation = 'Yonge';
             money = 1000;
+            tokens = 24;  // Initialize tokens
             inventory = {};
             itemCosts = {};
             isGameOver = false;
@@ -1560,6 +1583,7 @@
             // Initialize game state without showing high scores
             updateMenu('Yonge');
             updateMoneyDisplayInMenu();
+            updateTokenDisplay();  // Update token display
             
             // Scroll to Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
@@ -1584,6 +1608,14 @@
             });
             
             window.isInitializing = false;  // Clear initialization flag
+        }
+
+        // Update token display function
+        function updateTokenDisplay() {
+            const tokenDisplay = document.getElementById('token-display');
+            if (tokenDisplay) {
+                tokenDisplay.textContent = tokens;
+            }
         }
 
         window.onclick = function(event) {
