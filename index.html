@@ -230,6 +230,7 @@
         .money-display .cash-container {
             display: flex;
             align-items: center;
+            gap: 10px;
             justify-content: flex-start;
         }
         .money-display .token-container {
@@ -1137,26 +1138,13 @@
 
         function updateMenu(station) {
             if (isGameOver) {
-                console.log('Game is over, skipping menu update');
                 return;
             }
-            console.log(`Updating menu for station: ${station}`);
+
             const menuList = document.getElementById('menu-list');
-            
-            // Store the current scroll position
             const scrollPosition = menuList.scrollTop;
-            
-            // Update the menu content
             menuList.innerHTML = '';
-            
-            // Add debug logging for heights
-            console.log('Viewport height:', window.innerHeight);
-            console.log('Menu list height:', menuList.offsetHeight);
-            console.log('Container height:', document.querySelector('.container').offsetHeight);
-            console.log('Scrollable content height:', document.querySelector('.scrollable-content').offsetHeight);
-            console.log('Menu box height:', document.querySelector('.box').offsetHeight);
-            
-            // Update money display in menu box
+
             const menuMoneyDisplay = document.getElementById('menu-money-display');
             if (menuMoneyDisplay) {
                 menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
@@ -1165,16 +1153,13 @@
             const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
             items.forEach(item => {
                 const prices = stationPrices[station][item];
-                console.log(`${item} prices:`, prices);
-                
                 const maxBuyable = Math.min(
                     Math.floor(money / prices.price),
-                    prices.stock // Limit by available stock
+                    prices.stock
                 );
                 const currentInventory = inventory[item] || 0;
                 const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
-                console.log(`Maximum buyable ${item}:`, maxBuyable);
-                
+
                 const menuItem = document.createElement('div');
                 menuItem.className = 'menu-item';
                 menuItem.innerHTML = `
@@ -1200,7 +1185,6 @@
                 menuList.appendChild(menuItem);
             });
             
-            // Restore the scroll position after updating content
             menuList.scrollTop = scrollPosition;
         }
 
@@ -1373,18 +1357,15 @@
                 return;
             }
 
-            // Don't deduct token if selecting the same station
             if (stationName === lastVisitedStation) {
                 console.log('Same station selected, no token deducted');
                 return;
             }
 
-            // Deduct one token for changing stations
             tokens--;
             console.log(`Token deducted. Remaining tokens: ${tokens}`);
             updateTokenDisplay();
 
-            // Check if we've run out of tokens
             if (tokens < 0) {
                 console.log('Out of tokens, game over');
                 showGameOver();
@@ -1393,10 +1374,8 @@
             
             console.log(`Selecting station: ${stationName}`);
             
-            // Update last visited station
             lastVisitedStation = stationName;
             
-            // Update station button selection
             document.querySelectorAll('.station-button').forEach(btn => {
                 btn.classList.remove('selected');
                 if (btn.dataset.station === stationName) {
@@ -1404,7 +1383,6 @@
                 }
             });
             
-            // Center the selected station button
             const scrollContainer = document.querySelector('.stations-scroll-container');
             const selectedButton = document.querySelector(`.station-button[data-station="${stationName}"]`);
             if (scrollContainer && selectedButton) {
@@ -1415,7 +1393,6 @@
                 });
             }
             
-            // Update menu
             updateMenu(stationName);
         }
 
