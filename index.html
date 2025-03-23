@@ -1464,14 +1464,14 @@
                 }
             });
             
-            // Scroll to Yonge station
+            // Center Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            const yongeButton = document.querySelector('.station-button.selected');
+            const yongeButton = document.querySelector('.station-button[data-station="Yonge"]');
             if (scrollContainer && yongeButton) {
                 const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
                     left: scrollOffset,
-                    behavior: 'smooth'
+                    behavior: 'instant'  // Use instant instead of smooth for initial load
                 });
             }
             
@@ -1495,32 +1495,17 @@
             const highScoreModal = document.getElementById('highScoreModal');
             const viewHighScoresModal = document.getElementById('viewHighScoresModal');
             
-            console.log('Initial modal states:', {
-                gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
-                highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
-                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
-            });
-            
             // Hide all modals initially
             document.querySelectorAll('.modal').forEach(modal => {
-                console.log('Removing visible class from modal:', modal.id);
                 modal.classList.remove('visible');
-            });
-            
-            console.log('Modal states after hiding:', {
-                gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
-                highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
-                viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
             });
             
             // Show splash screen for 2 seconds
             setTimeout(() => {
-                console.log('=== Splash Screen Fade Out ===');
                 splashScreen.classList.add('fade-out');
                 
                 // After fade animation, hide splash and show main content
                 setTimeout(() => {
-                    console.log('=== Initializing Main Content ===');
                     splashScreen.style.display = 'none';
                     mainContent.style.display = 'block';
                     
@@ -1529,22 +1514,29 @@
                     document.body.scrollTop = 0;
                     document.documentElement.scrollTop = 0;
                     
-                    console.log('Modal states before game init:', {
-                        gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
-                        highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
-                        viewHighScoresModal: viewHighScoresModal ? viewHighScoresModal.className : 'not found'
-                    });
-                    
                     // Initialize the game
                     initializeGame();
-                }, 500); // Wait for fade animation to complete
+
+                    // Center Yonge station after a short delay to ensure DOM is ready
+                    setTimeout(() => {
+                        const scrollContainer = document.querySelector('.stations-scroll-container');
+                        const yongeButton = document.querySelector('.station-button[data-station="Yonge"]');
+                        if (scrollContainer && yongeButton) {
+                            const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
+                            scrollContainer.scrollTo({
+                                left: scrollOffset,
+                                behavior: 'instant'  // Use instant instead of smooth for initial load
+                            });
+                        }
+                    }, 100);
+                }, 500);
             }, 2000);
         });
 
         // Move the window.onload content to a separate function
         async function initializeGame() {
             console.log('=== Game Initialization Started ===');
-            window.isInitializing = true;  // Set initialization flag
+            window.isInitializing = true;
             
             // Double check modal visibility
             document.querySelectorAll('.modal').forEach(modal => {
@@ -1557,7 +1549,7 @@
             
             lastVisitedStation = 'Yonge';
             money = 1000;
-            tokens = 24;  // Initialize tokens
+            tokens = 24;
             inventory = {};
             itemCosts = {};
             isGameOver = false;
@@ -1575,19 +1567,19 @@
                 moneyDisplay.textContent = `$${formatMoney(money)}`;
             }
             
-            // Initialize game state without showing high scores
+            // Initialize game state
             updateMenu('Yonge');
             updateMoneyDisplayInMenu();
-            updateTokenDisplay();  // Update token display
+            updateTokenDisplay();
             
-            // Scroll to Yonge station
+            // Center Yonge station
             const scrollContainer = document.querySelector('.stations-scroll-container');
-            const yongeButton = document.querySelector('.station-button.selected');
+            const yongeButton = document.querySelector('.station-button[data-station="Yonge"]');
             if (scrollContainer && yongeButton) {
                 const scrollOffset = yongeButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (yongeButton.offsetWidth / 2);
                 scrollContainer.scrollTo({
                     left: scrollOffset,
-                    behavior: 'smooth'
+                    behavior: 'instant'  // Use instant instead of smooth for initial load
                 });
             }
             
@@ -1602,7 +1594,7 @@
                 }
             });
             
-            window.isInitializing = false;  // Clear initialization flag
+            window.isInitializing = false;
         }
 
         // Update token display function
