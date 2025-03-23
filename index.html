@@ -5,20 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
     <title>6ixGang</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
+        html, body {
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
-            box-sizing: border-box;
-            overflow-x: hidden;
-            overflow-y: hidden; /* Prevent body scroll */
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
         }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
         .container {
             text-align: center;
             width: 100%;
@@ -26,10 +28,28 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
             overflow: hidden;
             padding: 20px;
+            margin: 0 auto;
+            flex: 1;
         }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        #game-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex: 1;
+        }
+
         .stations-section {
             position: sticky;
             top: 0;
