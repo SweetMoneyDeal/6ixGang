@@ -1135,103 +1135,73 @@
             return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        function updateMenu() {
-            const menuList = document.getElementById('menu-list');
-            const scrollPosition = menuList.scrollTop;
-            
-            // Store existing menu items for comparison
-            const existingItems = {};
-            menuList.querySelectorAll('.menu-item').forEach(item => {
-                const itemName = item.querySelector('.item-name').textContent;
-                existingItems[itemName] = {
-                    element: item,
-                    price: item.querySelector('.item-price').textContent,
-                    available: item.querySelector('.item-available').textContent
-                };
-            });
-
-            // Calculate new prices and quantities
-            const updatedItems = {};
-            menuItems.forEach(item => {
-                const price = calculatePrice(item.basePrice);
-                const available = calculateAvailableQuantity(item);
-                updatedItems[item.name] = {
-                    price: `$${price.toFixed(2)}`,
-                    available: `${available} available`
-                };
-            });
-
-            // Update only changed items
-            menuItems.forEach(item => {
-                const existing = existingItems[item.name];
-                const updated = updatedItems[item.name];
-                
-                if (!existing) {
-                    // Create new item if it doesn't exist
-                    const menuItem = createMenuItem(item);
-                    menuList.appendChild(menuItem);
-                } else if (existing.price !== updated.price || existing.available !== updated.available) {
-                    // Update only if price or availability changed
-                    existing.element.querySelector('.item-price').textContent = updated.price;
-                    existing.element.querySelector('.item-available').textContent = updated.available;
-                }
-            });
-
-            menuList.scrollTop = scrollPosition;
-        }
-
-        function selectStation(stationIndex) {
-            if (stationIndex === currentStation) {
+        function updateMenu(station) {
+            if (isGameOver) {
+                console.log('Game is over, skipping menu update');
                 return;
             }
-
-            // Check if player has enough tokens
-            if (tokens > -1) {
-                tokens--;
-                document.getElementById('token-count').textContent = tokens;
-                
-                if (tokens === -1) {
-                    showGameOver();
-                    return;
-                }
+            console.log(`Updating menu for station: ${station}`);
+            const menuList = document.getElementById('menu-list');
+            
+            // Store the current scroll position
+            const scrollPosition = menuList.scrollTop;
+            
+            // Update the menu content
+            menuList.innerHTML = '';
+            
+            // Add debug logging for heights
+            console.log('Viewport height:', window.innerHeight);
+            console.log('Menu list height:', menuList.offsetHeight);
+            console.log('Container height:', document.querySelector('.container').offsetHeight);
+            console.log('Scrollable content height:', document.querySelector('.scrollable-content').offsetHeight);
+            console.log('Menu box height:', document.querySelector('.box').offsetHeight);
+            
+            // Update money display in menu box
+            const menuMoneyDisplay = document.getElementById('menu-money-display');
+            if (menuMoneyDisplay) {
+                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
             }
-
-            const stationButtons = document.querySelectorAll('.station-button');
-            stationButtons[currentStation].classList.remove('selected');
-            stationButtons[stationIndex].classList.add('selected');
             
-            const scrollContainer = document.querySelector('.stations-container');
-            const buttonWidth = stationButtons[0].offsetWidth;
-            const scrollOffset = buttonWidth * (stationIndex - 1);
-            
-            scrollContainer.scrollTo({
-                left: scrollOffset,
-                behavior: 'smooth'
-            });
-
-            currentStation = stationIndex;
-            updateMenu();
-        }
-
-        function createMenuItem(item) {
-            const menuItem = document.createElement('div');
-            menuItem.className = 'menu-item';
-            
-            const price = calculatePrice(item.basePrice);
-            const available = calculateAvailableQuantity(item);
-
-            menuItem.innerHTML = `
-                <div class="item-info">
-                    <span class="item-name">${item.name}</span>
-                    <div class="item-details">
-                        <span class="item-price">$${price.toFixed(2)}</span>
-                        <span class="item-available">${available} available</span>
+            const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
+            items.forEach(item => {
+                const prices = stationPrices[station][item];
+                console.log(`${item} prices:`, prices);
+                
+                const maxBuyable = Math.min(
+                    Math.floor(money / prices.price),
+                    prices.stock // Limit by available stock
+                );
+                const currentInventory = inventory[item] || 0;
+                const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
+                console.log(`Maximum buyable ${item}:`, maxBuyable);
+                
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <div class="item-info">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="item-name">${item}</div>
+                                <div style="color: #666; font-size: 16px;">(<strong>${prices.stock}</strong> available)</div>
+                            </div>
+                            <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
+                        </div>
+                        <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
+                            You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
+                        </div>
+                        <div class="price-info">
+                            <div class="price-row">
+                                <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
+                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <button class="buy-button" onclick="buyItem('${item.name}')">Buy</button>
-            `;
+                `;
+                menuList.appendChild(menuItem);
+            });
             
-            return menuItem;
+            // Restore the scroll position after updating content
+            menuList.scrollTop = scrollPosition;
         }
 
         function updateMoneyDisplayInMenu() {
@@ -1295,7 +1265,7 @@
             });
             
             updateMoneyDisplayInMenu();
-            updateMenu();
+            updateMenu(lastVisitedStation);
         }
 
         function closeBuyModal() {
@@ -1345,7 +1315,7 @@
             });
             
             updateMoneyDisplayInMenu();
-            updateMenu();
+            updateMenu(lastVisitedStation);
         }
 
         function closeSellModal() {
@@ -1391,10 +1361,62 @@
                 });
                 
                 updateMoneyDisplayInMenu();
-                updateMenu();
+                updateMenu(lastVisitedStation);
             }
             
             closeSellModal();
+        }
+
+        function selectStation(stationName) {
+            if (isGameOver) {
+                console.log('Game is over, cannot select stations');
+                return;
+            }
+
+            // Don't deduct token if selecting the same station
+            if (stationName === lastVisitedStation) {
+                console.log('Same station selected, no token deducted');
+                return;
+            }
+
+            // Deduct one token for changing stations
+            tokens--;
+            console.log(`Token deducted. Remaining tokens: ${tokens}`);
+            updateTokenDisplay();
+
+            // Check if we've run out of tokens
+            if (tokens < 0) {
+                console.log('Out of tokens, game over');
+                showGameOver();
+                return;
+            }
+            
+            console.log(`Selecting station: ${stationName}`);
+            
+            // Update last visited station
+            lastVisitedStation = stationName;
+            
+            // Update station button selection
+            document.querySelectorAll('.station-button').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.dataset.station === stationName) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // Center the selected station button
+            const scrollContainer = document.querySelector('.stations-scroll-container');
+            const selectedButton = document.querySelector(`.station-button[data-station="${stationName}"]`);
+            if (scrollContainer && selectedButton) {
+                const scrollOffset = selectedButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
+                scrollContainer.scrollTo({
+                    left: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Update menu
+            updateMenu(stationName);
         }
 
         function showGameOver() {
@@ -1564,7 +1586,7 @@
             // Update displays
             updateMoneyDisplayInMenu();
             updateTokenDisplay();  // Update token display
-            updateMenu();
+            updateMenu('Yonge');
             
             // Reset station selection
             document.querySelectorAll('.station-button').forEach(btn => {
@@ -1681,7 +1703,7 @@
             }
             
             // Initialize game state without showing high scores
-            updateMenu();
+            updateMenu('Yonge');
             updateMoneyDisplayInMenu();
             updateTokenDisplay();  // Update token display
             
