@@ -1136,264 +1136,154 @@
             return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
+        // Cache DOM elements
+        let cachedStationButtons;
+        let cachedScrollContainer;
+        let cachedMenuList;
+        let cachedMenuMoneyDisplay;
+        let previousPrices = {};
+
+        // Initialize cache after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            cachedStationButtons = document.querySelectorAll('.station-button');
+            cachedScrollContainer = document.querySelector('.stations-scroll-container');
+            cachedMenuList = document.getElementById('menu-list');
+            cachedMenuMoneyDisplay = document.getElementById('menu-money-display');
+            
+            // Initialize previous prices
+            const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
+            items.forEach(item => {
+                previousPrices[item] = {
+                    price: 0,
+                    stock: 0,
+                    maxBuyable: 0,
+                    inventory: 0,
+                    averageCost: 0
+                };
+            });
+        });
+
         function updateMenu(station) {
-            if (isGameOver) {
-                return;
-            }
+            if (isGameOver) return;
 
-            const menuList = document.getElementById('menu-list');
-            const scrollPosition = menuList.scrollTop;
-            menuList.innerHTML = '';
-
-            const menuMoneyDisplay = document.getElementById('menu-money-display');
-            if (menuMoneyDisplay) {
-                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
+            const scrollPosition = cachedMenuList.scrollTop;
+            
+            if (cachedMenuMoneyDisplay) {
+                cachedMenuMoneyDisplay.textContent = `$${formatMoney(money)}`;
             }
             
             const items = ['Cocaine', 'Heroin', 'LSD', 'Ketamine', 'Weed'];
+            const fragment = document.createDocumentFragment();
+            let needsFullUpdate = false;
+            
+            // Check if we need a full update
+            if (!cachedMenuList.children.length) {
+                needsFullUpdate = true;
+            }
+
             items.forEach(item => {
                 const prices = stationPrices[station][item];
+                const currentInventory = inventory[item] || 0;
                 const maxBuyable = Math.min(
                     Math.floor(money / prices.price),
                     prices.stock
                 );
-                const currentInventory = inventory[item] || 0;
                 const averageCost = currentInventory > 0 ? Math.round(itemCosts[item] / currentInventory) : 0;
 
-                const menuItem = document.createElement('div');
-                menuItem.className = 'menu-item';
-                menuItem.innerHTML = `
-                    <div class="item-info">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div class="item-name">${item}</div>
-                                <div style="color: #666; font-size: 16px;">(<strong>${prices.stock}</strong> available)</div>
+                const previous = previousPrices[item];
+                const hasChanged = previous.price !== prices.price ||
+                                  previous.stock !== prices.stock ||
+                                  previous.maxBuyable !== maxBuyable ||
+                                  previous.inventory !== currentInventory ||
+                                  previous.averageCost !== averageCost;
+
+                if (needsFullUpdate || hasChanged) {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'menu-item';
+                    menuItem.innerHTML = `
+                        <div class="item-info">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="item-name">${item}</div>
+                                    <div style="color: #666; font-size: 16px;">(<strong>${prices.stock}</strong> available)</div>
+                                </div>
+                                <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
                             </div>
-                            <div style="font-size: 24px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
-                        </div>
-                        <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
-                            You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
-                        </div>
-                        <div class="price-info">
-                            <div class="price-row">
-                                <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
-                                <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                            <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
+                                You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
+                            </div>
+                            <div class="price-info">
+                                <div class="price-row">
+                                    <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
+                                    <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-                menuList.appendChild(menuItem);
-            });
-            
-            menuList.scrollTop = scrollPosition;
-        }
+                    `;
 
-        function updateMoneyDisplayInMenu() {
-            console.log('Updating money display in menu:', money);
-            updateMoneyDisplay();
-        }
+                    if (needsFullUpdate) {
+                        fragment.appendChild(menuItem);
+                    } else {
+                        const existingItem = cachedMenuList.children[items.indexOf(item)];
+                        if (existingItem) {
+                            existingItem.replaceWith(menuItem);
+                        }
+                    }
 
-        function updateMoneyDisplay() {
-            console.log('Updating money display:', money);
-            const menuMoneyDisplay = document.getElementById('menu-money-display');
-            if (menuMoneyDisplay) {
-                menuMoneyDisplay.textContent = `$${formatMoney(money)}`;
-            }
-        }
-
-        function handleBuy(item, price) {
-            if (isGameOver) {
-                console.log('Game is over, cannot buy items');
-                return;
-            }
-            console.log(`Processing immediate purchase of ${item} at $${price}`);
-            
-            const stationStock = stationPrices[lastVisitedStation][item].stock;
-            if (stationStock <= 0) {
-                console.log('No stock available');
-                return;
-            }
-            
-            if (money < price) {
-                return;
-            }
-            
-            const maxAffordable = Math.min(
-                Math.floor(money / price),
-                stationStock // Limit by available stock
-            );
-            
-            if (maxAffordable <= 0) {
-                return;
-            }
-
-            // Buy maximum affordable amount immediately
-            const quantity = maxAffordable;
-            const totalCost = price * quantity;
-            
-            money -= totalCost;
-            inventory[item] = (inventory[item] || 0) + quantity;
-            itemCosts[item] = (itemCosts[item] || 0) + totalCost;
-            
-            // Reduce station stock
-            stationPrices[lastVisitedStation][item].stock -= quantity;
-            
-            console.log('Purchase successful:', {
-                item,
-                quantity,
-                totalCost,
-                newMoney: money,
-                newInventory: inventory,
-                itemCosts,
-                remainingStock: stationPrices[lastVisitedStation][item].stock
-            });
-            
-            updateMoneyDisplayInMenu();
-            updateMenu(lastVisitedStation);
-        }
-
-        function closeBuyModal() {
-            const modal = document.getElementById('buyModal');
-            modal.style.display = 'none';
-            currentBuyItem = null;
-            currentBuyPrice = 0;
-        }
-
-        function handleSell(item, price) {
-            if (isGameOver) {
-                console.log('Game is over, cannot sell items');
-                return;
-            }
-            console.log(`Processing immediate sale of ${item} at $${price}`);
-            
-            const maxAvailable = inventory[item] || 0;
-            if (maxAvailable <= 0) {
-                return;
-            }
-
-            // Sell all available items immediately
-            const quantity = maxAvailable;
-            const totalPrice = price * quantity;
-            
-            // Add items back to station inventory
-            stationPrices[lastVisitedStation][item].stock += quantity;
-            console.log(`Added ${quantity} ${item}(s) back to ${lastVisitedStation} station inventory`);
-            
-            money += totalPrice;
-            inventory[item] -= quantity;
-            
-            if (inventory[item] <= 0) {
-                delete inventory[item];
-                delete itemCosts[item];
-            } else {
-                const remainingQuantity = inventory[item];
-                const averageCost = itemCosts[item] / (remainingQuantity + quantity);
-                itemCosts[item] = averageCost * remainingQuantity;
-            }
-            
-            console.log('Sale successful:', {
-                newMoney: money,
-                newInventory: inventory,
-                itemCosts,
-                stationStock: stationPrices[lastVisitedStation][item].stock
-            });
-            
-            updateMoneyDisplayInMenu();
-            updateMenu(lastVisitedStation);
-        }
-
-        function closeSellModal() {
-            const modal = document.getElementById('sellModal');
-            modal.style.display = 'none';
-            currentSellItem = null;
-            currentSellPrice = 0;
-        }
-
-        function confirmSell() {
-            const quantity = parseInt(document.getElementById('sellQuantityInput').value) || 0;
-            const totalPrice = currentSellPrice * quantity;
-            
-            console.log(`Attempting to sell ${quantity} units of ${currentSellItem} at $${currentSellPrice} each`);
-            
-            if (quantity <= 0) {
-                console.error('Invalid quantity');
-                return;
-            }
-            
-            if (quantity <= (inventory[currentSellItem] || 0)) {
-                // Add items back to station inventory
-                stationPrices[lastVisitedStation][currentSellItem].stock += quantity;
-                console.log(`Added ${quantity} ${currentSellItem}(s) back to ${lastVisitedStation} station inventory`);
-                
-                money += totalPrice;
-                inventory[currentSellItem] -= quantity;
-                
-                if (inventory[currentSellItem] <= 0) {
-                    delete inventory[currentSellItem];
-                    delete itemCosts[currentSellItem];
-                } else {
-                    const remainingQuantity = inventory[currentSellItem];
-                    const averageCost = itemCosts[currentSellItem] / (remainingQuantity + quantity);
-                    itemCosts[currentSellItem] = averageCost * remainingQuantity;
+                    // Update previous prices
+                    previousPrices[item] = {
+                        price: prices.price,
+                        stock: prices.stock,
+                        maxBuyable: maxBuyable,
+                        inventory: currentInventory,
+                        averageCost: averageCost
+                    };
                 }
-                
-                console.log('Sale successful:', {
-                    newMoney: money,
-                    newInventory: inventory,
-                    itemCosts,
-                    stationStock: stationPrices[lastVisitedStation][currentSellItem].stock
-                });
-                
-                updateMoneyDisplayInMenu();
-                updateMenu(lastVisitedStation);
+            });
+
+            if (needsFullUpdate) {
+                cachedMenuList.replaceChildren(fragment);
             }
             
-            closeSellModal();
+            requestAnimationFrame(() => {
+                cachedMenuList.scrollTop = scrollPosition;
+            });
         }
 
         function selectStation(stationName) {
-            if (isGameOver) {
-                console.log('Game is over, cannot select stations');
-                return;
-            }
-
-            if (stationName === lastVisitedStation) {
-                console.log('Same station selected, no token deducted');
-                return;
-            }
+            if (isGameOver || stationName === lastVisitedStation) return;
 
             tokens--;
-            console.log(`Token deducted. Remaining tokens: ${tokens}`);
             updateTokenDisplay();
 
             if (tokens < 0) {
-                console.log('Out of tokens, game over');
                 showGameOver();
                 return;
             }
             
-            console.log(`Selecting station: ${stationName}`);
-            
             lastVisitedStation = stationName;
             
-            document.querySelectorAll('.station-button').forEach(btn => {
-                btn.classList.remove('selected');
-                if (btn.dataset.station === stationName) {
-                    btn.classList.add('selected');
-                }
+            // Update station selection
+            cachedStationButtons.forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.station === stationName);
             });
             
-            const scrollContainer = document.querySelector('.stations-scroll-container');
+            // Smooth scroll to selected station
             const selectedButton = document.querySelector(`.station-button[data-station="${stationName}"]`);
-            if (scrollContainer && selectedButton) {
-                const scrollOffset = selectedButton.offsetLeft - (scrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
-                scrollContainer.scrollTo({
-                    left: scrollOffset,
-                    behavior: 'smooth'
+            if (cachedScrollContainer && selectedButton) {
+                const scrollOffset = selectedButton.offsetLeft - (cachedScrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
+                requestAnimationFrame(() => {
+                    cachedScrollContainer.scrollTo({
+                        left: scrollOffset,
+                        behavior: 'smooth'
+                    });
                 });
             }
             
-            updateMenu(stationName);
+            // Update menu with RAF for better performance
+            requestAnimationFrame(() => {
+                updateMenu(stationName);
+            });
         }
 
         function showGameOver() {
