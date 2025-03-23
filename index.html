@@ -1524,6 +1524,11 @@
                     splashScreen.style.display = 'none';
                     mainContent.style.display = 'block';
                     
+                    // Ensure page is scrolled to top
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                    document.documentElement.scrollTop = 0;
+                    
                     console.log('Modal states before game init:', {
                         gameOverModal: gameOverModal ? gameOverModal.className : 'not found',
                         highScoreModal: highScoreModal ? highScoreModal.className : 'not found',
