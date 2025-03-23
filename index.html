@@ -1509,6 +1509,11 @@
                     behavior: 'instant'  // Use instant instead of smooth for initial load
                 });
             }
+
+            // Scroll page to top
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
             
             console.log('Game restarted successfully');
         }
