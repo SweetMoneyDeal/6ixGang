@@ -1,6 +1,8 @@
-# Station Game
+# 6ixGang
 
-A simple web-based game featuring Toronto subway stations.
+A subway trading game.
+
+Last deployment: 2025-03-23 23:45
 
 ## Setup
 
