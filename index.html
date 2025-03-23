@@ -959,6 +959,33 @@
         #menu-list::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .game-over h1 {
+            color: #ff4444;
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-over h2 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -1068,6 +1095,12 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="game-over">
+        <h1>GAME OVER</h1>
+        <h2>Better luck next time!</h2>
+        <button class="restart-button">Play Again</button>
     </div>
 
     <script>
