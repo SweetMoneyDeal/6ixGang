@@ -1252,6 +1252,14 @@
         function selectStation(stationName) {
             if (isGameOver || stationName === lastVisitedStation) return;
 
+            // Update visual state immediately
+            const oldButton = document.querySelector('.station-button.selected');
+            const newButton = document.querySelector(`.station-button[data-station="${stationName}"]`);
+            
+            if (oldButton) oldButton.classList.remove('selected');
+            if (newButton) newButton.classList.add('selected');
+
+            // Then handle game logic
             tokens--;
             updateTokenDisplay();
 
@@ -1262,15 +1270,9 @@
             
             lastVisitedStation = stationName;
             
-            // Update station selection
-            cachedStationButtons.forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.station === stationName);
-            });
-            
-            // Smooth scroll to selected station
-            const selectedButton = document.querySelector(`.station-button[data-station="${stationName}"]`);
-            if (cachedScrollContainer && selectedButton) {
-                const scrollOffset = selectedButton.offsetLeft - (cachedScrollContainer.offsetWidth / 2) + (selectedButton.offsetWidth / 2);
+            // Handle scrolling
+            if (cachedScrollContainer && newButton) {
+                const scrollOffset = newButton.offsetLeft - (cachedScrollContainer.offsetWidth / 2) + (newButton.offsetWidth / 2);
                 requestAnimationFrame(() => {
                     cachedScrollContainer.scrollTo({
                         left: scrollOffset,
@@ -1279,7 +1281,7 @@
                 });
             }
             
-            // Update menu with RAF for better performance
+            // Update menu last
             requestAnimationFrame(() => {
                 updateMenu(stationName);
             });
