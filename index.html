@@ -1372,6 +1372,25 @@
                 console.log('Game is over, cannot select stations');
                 return;
             }
+
+            // Don't deduct token if selecting the same station
+            if (stationName === lastVisitedStation) {
+                console.log('Same station selected, no token deducted');
+                return;
+            }
+
+            // Deduct one token for changing stations
+            tokens--;
+            console.log(`Token deducted. Remaining tokens: ${tokens}`);
+            updateTokenDisplay();
+
+            // Check if we've run out of tokens
+            if (tokens < 0) {
+                console.log('Out of tokens, game over');
+                showGameOver();
+                return;
+            }
+            
             console.log(`Selecting station: ${stationName}`);
             
             // Update last visited station
