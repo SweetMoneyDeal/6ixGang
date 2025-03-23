@@ -1712,6 +1712,68 @@
                 scrollContainer.scrollLeft = scrollLeft - walk;
             });
         });
+
+        function handleBuy(item, price) {
+            if (isGameOver) return;
+            
+            const currentStation = lastVisitedStation;
+            const prices = stationPrices[currentStation][item];
+            const maxBuyable = Math.min(
+                Math.floor(money / price),
+                prices.stock
+            );
+            
+            if (maxBuyable > 0) {
+                const cost = price * maxBuyable;
+                money -= cost;
+                
+                // Update inventory
+                inventory[item] = (inventory[item] || 0) + maxBuyable;
+                
+                // Update item costs for average calculation
+                itemCosts[item] = (itemCosts[item] || 0) + cost;
+                
+                // Update stock
+                prices.stock -= maxBuyable;
+                
+                // Update displays
+                updateMoneyDisplayInMenu();
+                updateMenu(currentStation);
+                
+                console.log(`Bought ${maxBuyable} ${item} for $${cost}`);
+            }
+        }
+
+        function handleSell(item, price) {
+            if (isGameOver) return;
+            
+            const currentStation = lastVisitedStation;
+            const currentInventory = inventory[item] || 0;
+            
+            if (currentInventory > 0) {
+                const revenue = price * currentInventory;
+                money += revenue;
+                
+                // Update inventory
+                inventory[item] = 0;
+                
+                // Reset item costs
+                itemCosts[item] = 0;
+                
+                // Update displays
+                updateMoneyDisplayInMenu();
+                updateMenu(currentStation);
+                
+                console.log(`Sold ${currentInventory} ${item} for $${revenue}`);
+            }
+        }
+
+        function updateMoneyDisplayInMenu() {
+            const moneyDisplay = document.getElementById('menu-money-display');
+            if (moneyDisplay) {
+                moneyDisplay.textContent = `$${formatMoney(money)}`;
+            }
+        }
     </script>
 </body>
 </html>
