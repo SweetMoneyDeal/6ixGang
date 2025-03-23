@@ -1208,12 +1208,13 @@
                                 </div>
                                 <div style="font-size: 18px; font-weight: bold; color: #333;">$${formatMoney(prices.price)}</div>
                             </div>
-                            <div style="color: #666; font-size: 14px; margin: 4px 0; text-align: left;">
-                                You have <strong style="font-size: 16px;">${currentInventory}</strong> at an average cost of <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong>
-                            </div>
                             <div class="price-info">
                                 <div class="price-row">
                                     <button class="action-button" onclick="handleBuy('${item}', ${prices.price})" ${maxBuyable === 0 ? 'disabled' : ''}>Buy ${maxBuyable}</button>
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                        <div style="color: #666; font-size: 14px;">You have <strong style="font-size: 16px;">${currentInventory}</strong></div>
+                                        <div style="color: #666; font-size: 14px;">Average cost: <strong style="font-size: 16px;">$${formatMoney(averageCost)}</strong></div>
+                                    </div>
                                     <button class="action-button sell" onclick="handleSell('${item}', ${prices.price})" ${currentInventory === 0 ? 'disabled' : ''}>Sell ${currentInventory}</button>
                                 </div>
                             </div>
