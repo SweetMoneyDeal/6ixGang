@@ -816,149 +816,42 @@
                 font-size: 28px;
             }
         }
-        #gameOverModal, #highScoreModal {
+        #gameOverModal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        #gameOverModal.visible, #highScoreModal.visible {
-            display: flex;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
             align-items: center;
             justify-content: center;
         }
 
-        #gameOverModal .modal-content, #highScoreModal .modal-content {
-            height: 600px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding: 30px;
-            margin: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 400px;
+        #gameOverModal.visible {
+            display: flex !important;
+            z-index: 9999 !important;
+        }
+
+        #gameOverModal .modal-content {
             background-color: white;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            z-index: 10000;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        #highScoreModal .modal-content {
-            height: auto;
-            min-height: 300px;
-            max-height: 600px;
-            gap: 20px;
+        
+        /* Ensure modal content is always visible */
+        #gameOverModal .modal-content * {
+            position: relative;
+            z-index: 10001;
         }
-
-        #highScoreModal .modal-title {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        #highScoreModal p {
-            font-size: 18px;
-            color: #333;
-            margin: 5px 0;
-        }
-
-        #highScoreModal .modal-input {
-            font-size: 18px;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            width: 100%;
-            box-sizing: border-box;
-            margin: 10px 0;
-        }
-
-        #highScoreModal .modal-buttons {
-            margin-top: auto;
-            padding-top: 20px;
-        }
-
-        @media (max-width: 768px) {
-            #gameOverModal .modal-content, #highScoreModal .modal-content {
-                height: 80vh;
-                max-height: 600px;
-                width: 90%;
-                max-width: 400px;
-                padding: 20px;
-            }
-
-            #highScoreModal .modal-content {
-                height: auto;
-                min-height: 300px;
-                max-height: 80vh;
-            }
-
-            #highScoreModal .modal-title {
-                font-size: 28px;
-            }
-
-            #highScoreModal p {
-                font-size: 16px;
-            }
-
-            #highScoreModal .modal-input {
-                font-size: 16px;
-                padding: 10px;
-            }
-        }
-
-        #gameOverModal .high-scores {
-            flex: 1;
-            overflow-y: auto;
-            margin: 20px 0;
-            padding-right: 10px;
-        }
-
-        #gameOverModal .modal-buttons {
-            margin-top: auto;
-            padding-top: 20px;
-        }
-
-        /* Add custom scrollbar for the high scores section */
-        #gameOverModal .high-scores::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #gameOverModal .high-scores::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        #gameOverModal .high-scores::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        #gameOverModal .high-scores::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Add custom scrollbar for menu list */
-        #menu-list::-webkit-scrollbar {
-            width: 8px;
-        }
-        #menu-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        #menu-list::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        #menu-list::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
+        
         .game-over {
             display: none;
             position: fixed;
@@ -1323,7 +1216,15 @@
 
         function showGameOver() {
             console.log('Game Over');
+            
+            // Update game state
             isGameOver = true;
+            
+            // Prevent any further station clicks
+            document.querySelectorAll('.station-button').forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
             const modal = document.getElementById('gameOverModal');
             const finalMoneySpan = document.getElementById('final-money');
             
@@ -1331,13 +1232,31 @@
                 finalMoneySpan.textContent = `$${formatMoney(money)}`;
             }
             
+            if (modal) {
+                // First hide all other modals
+                document.querySelectorAll('.modal').forEach(m => {
+                    if (m !== modal) {
+                        m.style.display = 'none';
+                        m.classList.remove('visible');
+                    }
+                });
+                
+                // Show game over modal
+                modal.style.display = 'flex';
+                modal.classList.add('visible');
+                modal.style.zIndex = '9999';
+                console.log('Game over modal displayed');
+                
+                // Force the modal to be visible
+                requestAnimationFrame(() => {
+                    modal.style.display = 'flex';
+                    modal.classList.add('visible');
+                    modal.style.zIndex = '9999';
+                });
+            }
+            
             // Check if this is a high score and update the display
             checkAndDisplayHighScore();
-            
-            if (modal) {
-                modal.classList.add('visible');
-                console.log('Game over modal displayed');
-            }
         }
 
         async function checkAndDisplayHighScore() {
@@ -1813,4 +1732,5 @@
         }
     </script>
 </body>
+</html>
 </html>
