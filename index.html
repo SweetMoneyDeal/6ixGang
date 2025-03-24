@@ -1142,7 +1142,6 @@
             items.forEach(item => {
                 const range = itemPriceRanges[item];
                 const price = getRandomPrice(range.min, range.max);
-                console.log(`Generated price for ${item}:`, price);
                 // Add stock amount between 0 and 10
                 const stock = Math.floor(Math.random() * 11);
                 prices[item] = { price: price, stock: stock };
