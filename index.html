@@ -1278,40 +1278,17 @@
                 if (scores.length < 10 || money > scores[scores.length - 1]?.score || scores.length === 0) {
                     console.log('New high score achieved! Showing high score modal');
                     const highScoreModal = document.getElementById('highScoreModal');
-                    const gameOverModal = document.getElementById('gameOverModal');
-                    
-                    // Hide game over modal first
-                    if (gameOverModal) {
-                        gameOverModal.style.display = 'none';
-                        gameOverModal.classList.remove('visible');
-                    }
-                    
-                    // Show high score modal
-                    if (highScoreModal) {
-                        highScoreModal.style.display = 'flex';
-                        highScoreModal.classList.add('visible');
-                        highScoreModal.style.zIndex = '9999';
-                        console.log('High score modal displayed');
-                    }
+                    highScoreModal.classList.add('visible');
+                    highScoreModal.style.display = 'flex';
                 } else {
                     console.log('No new high score achieved');
-                    // If no high score, show game over modal
-                    const gameOverModal = document.getElementById('gameOverModal');
-                    if (gameOverModal) {
-                        gameOverModal.style.display = 'flex';
-                        gameOverModal.classList.add('visible');
-                        gameOverModal.style.zIndex = '9999';
-                    }
                 }
             } catch (error) {
                 console.error('Error checking high scores:', error);
                 // Still show the game over modal even if high scores fail
                 const gameOverModal = document.getElementById('gameOverModal');
-                if (gameOverModal) {
-                    gameOverModal.style.display = 'flex';
-                    gameOverModal.classList.add('visible');
-                    gameOverModal.style.zIndex = '9999';
-                }
+                gameOverModal.classList.add('visible');
+                gameOverModal.style.display = 'flex';
             }
         }
 
@@ -1351,17 +1328,11 @@
                 const highScoreModal = document.getElementById('highScoreModal');
                 const gameOverModal = document.getElementById('gameOverModal');
                 
-                if (highScoreModal) {
-                    highScoreModal.style.display = 'none';
-                    highScoreModal.classList.remove('visible');
-                }
+                highScoreModal.classList.remove('visible');
+                highScoreModal.style.display = 'none';
                 
-                if (gameOverModal) {
-                    gameOverModal.style.display = 'flex';
-                    gameOverModal.classList.add('visible');
-                    gameOverModal.style.zIndex = '9999';
-                    console.log('Game over modal displayed after saving high score');
-                }
+                gameOverModal.classList.add('visible');
+                gameOverModal.style.display = 'flex';
             } catch (error) {
                 console.error('Error saving high score:', error);
                 alert('Failed to save high score. Please try again.');
@@ -1761,4 +1732,5 @@
         }
     </script>
 </body>
+</html>
 </html>
